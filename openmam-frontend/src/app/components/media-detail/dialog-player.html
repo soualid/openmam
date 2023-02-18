@@ -1,0 +1,12 @@
+<div style="padding: 30px;">
+    <div><video id="video" controls width="700"></video></div>
+
+    <mat-form-field appearance="fill">
+        <mat-label>Audio tracks</mat-label>
+        <mat-select [(value)]="selectedTrack">
+          <mat-option *ngFor="let audio of audios" [value]="audio.code" (onSelectionChange)="audioTrackChanged($event)">
+            {{audio.name}}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+</div>

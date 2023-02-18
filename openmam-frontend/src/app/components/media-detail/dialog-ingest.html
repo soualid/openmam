@@ -1,0 +1,13 @@
+<h1 mat-dialog-title>Ingest</h1>
+<mat-dialog-content>
+  <p>Select a filter pattern</p>
+  <mat-form-field appearance="fill">
+    <mat-label>File pattern</mat-label>
+    <input matInput [(ngModel)]="data.pattern">
+  </mat-form-field>
+
+  <div mat-dialog-actions>
+    <button mat-button (click)="onNoClick()">Cancel</button>
+    <button mat-button [mat-dialog-close]="data.pattern" cdkFocusInitial>Ok</button>
+  </div>  
+</mat-dialog-content>

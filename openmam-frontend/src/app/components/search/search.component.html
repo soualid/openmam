@@ -1,0 +1,31 @@
+<div *ngIf="result?.numberOfElements; else firstLoad">
+    <div class="top-container">
+        <h1>{{result.numberOfElements}} search results</h1>
+        
+        <button mat-button [matMenuTriggerFor]="menu">
+            <mat-icon>settings</mat-icon>
+        </button>
+        <mat-menu #menu="matMenu">
+            <button mat-menu-item (click)="openCreateDialog()">Create new media</button>
+        </mat-menu>
+        
+    </div>
+    
+    <ul>
+        <li *ngFor="let media of result.content">
+            <a [routerLink]="['/media', media.id]" href="...">
+                {{media.name}}
+            </a>
+        </li>
+    </ul>
+</div>
+<ng-template #firstLoad>
+    <div *ngIf="loading; else empty">
+        <mat-spinner></mat-spinner>
+    </div>
+</ng-template>
+<ng-template #empty>
+    <h1>Hell, it's empty!</h1>
+    <p>Well, it seems your media library is empty, click the button below to create your first media.</p>
+    <button mat-raised-button (click)="openCreateDialog()">Create media</button>
+</ng-template>
