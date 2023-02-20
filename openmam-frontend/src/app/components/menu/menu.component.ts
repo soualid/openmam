@@ -20,5 +20,15 @@ export class MenuComponent {
     title: 'Locations',
     icon: 'folder_copy',
     target: '/locations'
+  },
+  {
+    title: 'Tasks',
+    icon: 'task',
+    target: '/tasks'
+  },
+  {
+    title: 'Metadata schemas',
+    icon: 'extension',
+    target: '/metadata_schema'
   }]
 }

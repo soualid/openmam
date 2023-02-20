@@ -19,10 +19,22 @@ class SchedulingController {
         this.schedulingService = schedulingService;
     }
 
+    /*
     @PostMapping("/scheduling/lockJob/{type}")
     public Task scheduleTask(@PathVariable Task.Type type, @RequestParam String requestedBy) {
         logger.info(type.toString());
         return schedulingService.scheduleTask(type, requestedBy);
+    }
+     */
+
+    @PostMapping("/scheduling/lockNextJob")
+    public Task acquireLockForNextTask(@RequestParam String requestedBy) {
+        return schedulingService.acquireLockForNextTask(requestedBy);
+    }
+
+    @PostMapping("/scheduling/endJob/{jobId}")
+    public void endTask(@PathVariable Long jobId) {
+        schedulingService.endTask(jobId);
     }
 
 }

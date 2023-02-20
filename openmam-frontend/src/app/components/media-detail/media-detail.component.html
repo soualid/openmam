@@ -1,27 +1,128 @@
-<div class="top-container">
-    <h1>{{ result.name }}</h1>    
-    
-    <button mat-button [matMenuTriggerFor]="menu">
-        <mat-icon>settings</mat-icon>
-    </button>
-    <mat-menu #menu="matMenu">
-        <button mat-menu-item (click)="openIngestDialog()">Ingest new files</button>
-    </mat-menu>
-    
-</div>
 
-<div class="container">
-    <div class="preview" [ngStyle]="{'background-image': 'url(/api/san/variants/' + result.id + '.png)'}" *ngIf="result.elements?.length">
-        <a (click)="openPlayer()"><mat-icon class="icon-display">play_circle</mat-icon></a>
+<div *ngIf="!loading; else firstLoad">
+    <div class="top-container">
+        <h1>{{ result.name }}</h1>
+        <button mat-button [matMenuTriggerFor]="menu">
+            <mat-icon>settings</mat-icon>
+        </button>
+        <mat-menu #menu="matMenu">
+            <button mat-menu-item (click)="openIngestDialog()">Ingest new files</button>
+            <button mat-menu-item (click)="openUserMetadataDialog()">Edit metadatas</button>
+            <button mat-menu-item (click)="openCreateVersionDialog()">Create version</button>
+            <button mat-menu-item (click)="openMoveMediaDialog()">Move to...</button>
+        </mat-menu>
+        
     </div>
-    <div>
-        {{result.elements?.length}} file(s) ingested for this media.
-        <ul>
-            <li *ngFor="let element of result.elements">
-                Element <span class="code">{{element.filename}}</span> in location <span class="code">{{element.location?.name}}</span><br/>
-                It contains {{element.streams?.length}} streams:
+
+    <div class="container" *ngIf="result?.elements?.length; else empty">
+        <div>
+            <h2>
+                Available versions
+            </h2>
+            <div style="margin-bottom: 20px;">
+                <div *ngIf="result?.versions?.length === 0">
+                    <p>Use the button below to create a new version.</p>
+                    <button mat-raised-button (click)="openCreateVersionDialog()">Create version</button>
+                </div>
+                <button (click)="selectVersion(version)" mat-flat-button [color]="version.id == selectedVersion.id ? 'primary' : ''" *ngFor="let version of result.versions" style="margin-right: 10px;">
+                    {{version.name}}
+                </button>
+                <button (click)="selectVersion({})" mat-flat-button [color]="selectedVersion.id == null ? 'primary' : ''" style="margin-right: 10px;" *ngIf="result?.versions?.length">
+                    All streams
+                </button>
+            </div>
+
+            <table class="metadata-form" *ngIf="metadataGroups && result.name && result.dynamicMetadatas">
+                <tr class="heading">
+                    <td colspan="2">Media related user defined metadatas</td>
+                </tr>
+
+                <ng-container *ngIf="metadataGroups && result.name">
+                    <ng-container *ngFor="let metadataGroup of metadataGroups.content">
+                        <ng-container *ngFor="let metadataDefinition of metadataGroup.metadatas">
+                            <ng-container [ngSwitch]="metadataDefinition.type" *ngIf="result.dynamicMetadatas && result.dynamicMetadatas[metadataDefinition.name]">
+                                <tr>
+                                    <ng-container *ngSwitchCase="metadataTypes.REFERENCE">
+                                        <td><mat-label>{{metadataDefinition.label}}</mat-label></td>
+                                        <td><span>{{result.dynamicMetadatas[metadataDefinition.name].representation}}</span></td>
+                                    </ng-container>
+                                    <ng-container *ngSwitchCase="metadataTypes.DATE">
+                                        <td><mat-label>{{metadataDefinition.label}}</mat-label></td>
+                                        <td>{{result.dynamicMetadatas[metadataDefinition.name] | date:'yyyy/MM/dd'}}</td>
+                                    </ng-container>
+                                    <ng-container *ngSwitchDefault>
+                                        <td><mat-label>{{metadataDefinition.label}}</mat-label></td>
+                                        <td>{{result.dynamicMetadatas[metadataDefinition.name]}}</td>
+                                    </ng-container>
+                                </tr>
+                            </ng-container>
+                        </ng-container>
+                    </ng-container>
+                </ng-container>
+
+                <ng-container class="metadata-form" *ngIf="selectedVersion.dynamicMetadatas != null">
+                    <tr class="heading">
+                        <td colspan="2">Version related user defined metadatas</td>
+                    </tr>
+                    <ng-container *ngFor="let metadataGroup of metadataGroups.content">
+                        <ng-container *ngFor="let metadataDefinition of metadataGroup.metadatas">
+                            <ng-container [ngSwitch]="metadataDefinition.type" *ngIf="selectedVersion.dynamicMetadatas && selectedVersion.dynamicMetadatas[metadataDefinition.name]">
+                                <tr>
+                                    <ng-container *ngSwitchCase="metadataTypes.REFERENCE">
+                                        <td><mat-label>{{metadataDefinition.label}}</mat-label></td>
+                                        <td><span>{{selectedVersion.dynamicMetadatas[metadataDefinition.name].representation}}</span></td>
+                                    </ng-container>
+                                    <ng-container *ngSwitchCase="metadataTypes.DATE">
+                                        <td><mat-label>{{metadataDefinition.label}}</mat-label></td>
+                                        <td>{{selectedVersion.dynamicMetadatas[metadataDefinition.name] | date:'yyyy/MM/dd'}}</td>
+                                    </ng-container>
+                                    <ng-container *ngSwitchDefault>
+                                        <td><mat-label>{{metadataDefinition.label}}</mat-label></td>
+                                        <td>{{selectedVersion.dynamicMetadatas[metadataDefinition.name]}}</td>
+                                    </ng-container>
+                                </tr>
+                            </ng-container>
+                        </ng-container>
+                    </ng-container>
+                </ng-container>  
+            </table>          
+
+            <div *ngIf="result?.dynamicMetadatas === null" style="margin-bottom: 20px;">
+                <p>Use the button below to set the user defined metadatas to this media and/or version.</p>
+                <button mat-raised-button (click)="openUserMetadataDialog()">Set metadatas</button>
+            </div>
+
+            <div *ngIf="selectedVersion.id != null">
+                <h2>
+                    Primary Video
+                </h2>
+
+                <div style="margin-bottom: 20px">
+                    Stream #{{result.video?.streamIndex}} of type <span class="code">{{result.video?.type}}</span><br/>
+                    Codec: {{result.video?.codecName}} ({{result.video?.codecType}})<br/>
+                    Long name: {{result.video?.codecLongName}}<br/>
+                    Tag String: {{result.video?.codecTagString}}<br/>
+                    Status: {{result.video?.status}}
+                </div>
+
+                <h2>
+                    Audio
+                </h2>
+
+                <div style="margin-bottom: 20px">
+                    Stream #{{selectedVersion.audio?.streamIndex}} of type <span class="code">{{selectedVersion.audio?.type}}</span><br/>
+                    Codec: {{selectedVersion.audio?.codecName}} ({{selectedVersion.audio?.codecType}})<br/>
+                    Long name: {{selectedVersion.audio?.codecLongName}}<br/>
+                    Tag String: {{selectedVersion.audio?.codecTagString}}<br/>
+                    Status: {{selectedVersion.audio?.status}}
+                </div>
+            </div>
+            <div *ngIf="selectedVersion.id != null && selectedVersion.subtitles?.length">
+                <h2>
+                    Subtitles
+                </h2>
                 <ul>
-                    <li *ngFor="let stream of element.streams" class="stream">
+                    <li *ngFor="let stream of selectedVersion.subtitles" class="stream">
                         Stream #{{stream.streamIndex}} of type <span class="code">{{stream.type}}</span><br/>
                         Codec: {{stream.codecName}} ({{stream.codecType}})<br/>
                         Long name: {{stream.codecLongName}}<br/>
@@ -29,9 +130,47 @@
                         Status: {{stream.status}}
                     </li>
                 </ul>
-        
-                <button mat-raised-button (click)="openMetadata(element)">Full metadatas</button>
-            </li>
-        </ul>
+            </div>
+            <div *ngIf="selectedVersion.id == null">
+                <h2>
+                    Ingested files and streams
+                </h2>
+                
+                <ng-container *ngIf="result.variantsLocation">
+                    <div>Variants currently localised in <span class="code">{{result.variantsLocation.name}}</span>.</div>
+                </ng-container>
+                {{result.elements?.length}} file(s) have been ingested for this media.
+                <ul>
+                    <li *ngFor="let element of result.elements">
+                        Element <span class="code">{{element.filename}}</span> in location <span class="code">{{element.location?.name}}</span><br/>
+                        It contains {{element.streams?.length}} streams:
+                        <ul>
+                            <li *ngFor="let stream of element.streams" class="stream">
+                                Stream #{{stream.streamIndex}} of type <span class="code">{{stream.type}}</span><br/>
+                                Codec: {{stream.codecName}} ({{stream.codecType}})<br/>
+                                Long name: {{stream.codecLongName}}<br/>
+                                Tag String: {{stream.codecTagString}}<br/>
+                                Status: {{stream.status}}
+                            </li>
+                        </ul>
+                
+                        <button mat-raised-button (click)="openMetadata(element)">Full metadatas</button>
+                    </li>
+                </ul>                
+            </div>
+
+        </div>
+
+        <div class="preview" [ngStyle]="{'background-image': 'url(/api/san/variants/' + result.id + '.png)'}" *ngIf="result.elements?.length">
+            <a (click)="openPlayer()"><mat-icon class="icon-display">play_circle</mat-icon></a>
+        </div>        
     </div>
 </div>
+
+<ng-template #firstLoad>
+    <mat-spinner></mat-spinner>
+</ng-template>
+<ng-template #empty>
+    <p>No media file has been ingested yet for this media, click the button below to import one.</p>
+    <button mat-raised-button (click)="openIngestDialog()">Ingest files</button>
+</ng-template>

@@ -1,0 +1,15 @@
+<h1>Metadata group</h1>
+
+<span class="code">{{result.name}}</span> group can be attached to <span class="code">{{result.attachmentType}}</span>.
+
+<ul>
+    <li *ngFor="let metadata of result.metadatas">
+        <span class="code">{{metadata.name}}</span> is a <span class="code">{{metadata.type}}</span> field
+        <ng-container *ngIf="metadata.type == metadataTypes.MULTI_VALUED">
+            with allowed values: <span class="code">{{metadata.allowedValues}}</span>
+        </ng-container>
+        <ng-container *ngIf="metadata.type == metadataTypes.REFERENCE">
+            pointing on: <span class="code">{{metadata.referencedMetadataGroup}}</span>
+        </ng-container>
+    </li>
+</ul>

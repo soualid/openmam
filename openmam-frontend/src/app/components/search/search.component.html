@@ -10,14 +10,37 @@
         </mat-menu>
         
     </div>
+        
+    <table mat-table [dataSource]="dataSource" class="mat-elevation-z8">
+        <tr mat-header-row *matHeaderRowDef="columnsToDisplay"></tr>
+
+        <ng-container matColumnDef="preview">
+            <th mat-header-cell *matHeaderCellDef> Preview </th>
+            <td mat-cell *matCellDef="let element"> 
+                <div class="preview" [ngStyle]="{'background-image': 'url(/api/san/variants/' + element.id + '.png)'}">
+
+                </div>
+            </td>
+        </ng-container>
+
+        <ng-container matColumnDef="name">
+            <th mat-header-cell *matHeaderCellDef> Name </th>
+            <td mat-cell *matCellDef="let element"> {{element.name}} </td>
+        </ng-container>
+
+        <ng-container matColumnDef="elementCount">
+            <th mat-header-cell *matHeaderCellDef> Elements </th>
+            <td mat-cell *matCellDef="let element"> {{element.elementsCount}} </td>
+        </ng-container>
+
+        <ng-container matColumnDef="streamCount">
+            <th mat-header-cell *matHeaderCellDef> Streams </th>
+            <td mat-cell *matCellDef="let element"> {{element.streamsCount}} </td>
+        </ng-container>
+
+        <tr mat-row (click)="clickedRow(row)" *matRowDef="let row; columns: columnsToDisplay;"></tr>
+    </table>
     
-    <ul>
-        <li *ngFor="let media of result.content">
-            <a [routerLink]="['/media', media.id]" href="...">
-                {{media.name}}
-            </a>
-        </li>
-    </ul>
 </div>
 <ng-template #firstLoad>
     <div *ngIf="loading; else empty">

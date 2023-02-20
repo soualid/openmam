@@ -1,0 +1,17 @@
+<h1 mat-dialog-title>Move media</h1>
+<mat-dialog-content>
+  <p>Select a destination location</p>
+  <mat-form-field appearance="fill">
+    <mat-label>Destination location</mat-label>
+    <mat-select [(ngModel)]="data.locationId">
+      <mat-option *ngFor="let location of data.locations" [value]="location.id">
+          {{location.name}}
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <div mat-dialog-actions>
+    <button mat-button (click)="onNoClick()">Cancel</button>
+    <button mat-button [mat-dialog-close]="data.locationId" cdkFocusInitial>Ok</button>
+  </div>  
+</mat-dialog-content>
