@@ -1,0 +1,48 @@
+<h1>Tasks</h1>
+
+<table mat-table [dataSource]="dataSource" class="mat-elevation-z8" *ngIf="result?.numberOfElements; else firstLoad">
+    <tr mat-header-row *matHeaderRowDef="columnsToDisplay"></tr>
+
+    <ng-container matColumnDef="id">
+      <th mat-header-cell *matHeaderCellDef> ID </th>
+      <td mat-cell *matCellDef="let element"> {{element.id}} </td>
+    </ng-container>
+
+    <ng-container matColumnDef="type">
+      <th mat-header-cell *matHeaderCellDef> Type </th>
+      <td mat-cell *matCellDef="let element"> <span class="code">{{element.type}}</span> </td>
+    </ng-container>
+
+    <ng-container matColumnDef="lockedBy">
+      <th mat-header-cell *matHeaderCellDef> Locked by </th>
+      <td mat-cell *matCellDef="let element"> {{element.lockedBy}} </td>
+    </ng-container>    
+    
+    <ng-container matColumnDef="creationDate">
+      <th mat-header-cell *matHeaderCellDef> Created </th>
+      <td mat-cell *matCellDef="let element"> {{element.creationDate | date: 'medium'}} </td>
+    </ng-container>    
+    
+    <ng-container matColumnDef="endDate">
+      <th mat-header-cell *matHeaderCellDef> Ended </th>
+      <td mat-cell *matCellDef="let element"> {{element.endDate | date: 'medium'}} </td>
+    </ng-container>    
+
+    <ng-container matColumnDef="status">
+      <th mat-header-cell *matHeaderCellDef> Status </th>
+      <td mat-cell *matCellDef="let element"> <span class="code">{{element.status}}</span> </td>
+    </ng-container>    
+    
+    <tr mat-row *matRowDef="let row; columns: columnsToDisplay;"></tr>
+</table>
+
+
+<ng-template #firstLoad>
+    <div *ngIf="loading; else empty">
+        <mat-spinner></mat-spinner>
+    </div>
+</ng-template>
+<ng-template #empty>
+    <h1>Hell, it's empty!</h1>
+    <p>Your tasks will be displayed there.</p>
+</ng-template>

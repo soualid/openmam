@@ -4,7 +4,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
 
-import { CreateMediaResult, Media } from '../models/media';
+import { CreateMediaResult, CreateVersionResult, MediaVersion, Media } from '../models/media';
 import { Page } from '../models/page';
 
 @Injectable({ providedIn: 'root' })
@@ -39,6 +39,14 @@ export class MediaService {
       );
   }
 
+  triggerMediaMove<Data>(id: number, locationId: number): Observable<void> {
+    const url = `${this.mediaUrl}/${id}/move/${locationId}`;
+    return this.http.post<void>(url, {})
+      .pipe(
+        catchError(this.handleError<void>(`triggerMediaMove id=${id}`))
+      );
+  }
+
   createMedia<Data>(name: string): Observable<CreateMediaResult> {
     const url = `${this.mediaUrl}`;
     return this.http.post<CreateMediaResult>(url, {
@@ -58,6 +66,14 @@ export class MediaService {
           console.log(`${outcome} media id=${id}`);
         }),
         catchError(this.handleError<Media>(`getMedia id=${id}`))
+      );
+  }
+
+  createVersion<Data>(version:MediaVersion, mediaId:number, audioId: number): Observable<Media> {
+    const url = `${this.mediaUrl}/${mediaId}/version?audioId=${audioId}`;
+    return this.http.post<CreateVersionResult>(url, version)
+      .pipe(
+        catchError(this.handleError<CreateVersionResult>(`CreateVersionResult version=${version}`))
       );
   }
 

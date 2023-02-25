@@ -4,10 +4,25 @@ export interface ScanResult {
 export interface CreateMediaResult {
     id: number;
 }
+export interface CreateVersionResult {
+    id: number;
+}
 export interface Media {
     id?: number;
     name?: string;
+    video?: MediaStream;
     elements?: MediaElement[];
+    dynamicMetadatas?: any;
+    variantsLocation?: Location;
+    versions?: MediaVersion[];
+}
+export interface MediaVersion {
+    id?: number;
+    name?: string;
+    language?: string;
+    audio?: MediaStream;
+    subtitles?: MediaStream[];
+    dynamicMetadatas?: any;
 }
 export interface MediaElement {
     filename?: string;
@@ -17,8 +32,8 @@ export interface MediaElement {
 }
 export interface MediaStream {
     status?: string;
-    streamIndex?: number;
     type?: string;
+    streamIndex?: number;
     codecName?: string;
     codecType?: string;
     codecLongName?: string;

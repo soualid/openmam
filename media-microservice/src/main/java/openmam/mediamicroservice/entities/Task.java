@@ -9,14 +9,24 @@ import java.util.Date;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Task {
 
+    public static Task from(Status status) {
+        var task = new Task();
+        task.setStatus(status);
+        task.setCreationDate(null);
+        return task;
+    }
+
     public enum Type {
         SCAN,
-        GENERATE_VARIANTS
+        GENERATE_VARIANTS,
+        MOVE_ASSET
     }
 
     public enum Status {
         PENDING,
         WORKING,
+        SUCCEEDED,
+        ERROR,
         DONE,
         FAILED
     }
@@ -82,6 +92,16 @@ public class Task {
 
     private Date creationDate = new Date();
 
+    public Date getEndDate() {
+        return endDate;
+    }
+
+    public void setEndDate(Date endDate) {
+        this.endDate = endDate;
+    }
+
+    private Date endDate;
+
     public String getCreatedBy() {
         return createdBy;
     }
@@ -91,6 +111,16 @@ public class Task {
     }
 
     private String createdBy;
+
+    public String getLockedBy() {
+        return lockedBy;
+    }
+
+    public void setLockedBy(String lockedBy) {
+        this.lockedBy = lockedBy;
+    }
+
+    private String lockedBy;
 
     public Type getType() {
         return type;

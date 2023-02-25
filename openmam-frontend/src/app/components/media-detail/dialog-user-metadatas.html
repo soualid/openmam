@@ -1,0 +1,56 @@
+<h1 mat-dialog-title>Edit metadatas</h1>
+<mat-dialog-content>
+    <p>
+        Here are the available metadatas for this media.
+    </p>
+    <ul class="metadata-form" *ngIf="data.metadataForm">
+        <form [formGroup]="data.metadataForm">
+            <div *ngFor="let metadataGroup of data.metadataGroups.content" [formGroupName]="metadataGroup.id">
+                <ng-container *ngIf="metadataGroup.attachmentType !== data.metadataAttachmentTypes.REFERENCEABLE">
+                    
+                    <li *ngFor="let metadataDefinition of metadataGroup.metadatas">
+                        <ng-container [ngSwitch]="metadataDefinition.type">
+                            <mat-form-field appearance="fill" *ngSwitchCase="data.metadataTypes.TEXT">
+                                <mat-label>{{metadataDefinition.label}}</mat-label>
+                                <input matInput [formControlName]="metadataDefinition.name">
+                            </mat-form-field>
+                            <mat-form-field appearance="fill" *ngSwitchCase="data.metadataTypes.LONG_TEXT">
+                                <mat-label>{{metadataDefinition.label}}</mat-label>
+                                <textarea matInput [formControlName]="metadataDefinition.name"></textarea>
+                            </mat-form-field>
+                            <mat-form-field appearance="fill" *ngSwitchCase="data.metadataTypes.DATE">
+                                <mat-label>{{metadataDefinition.label}}</mat-label>
+                                <input matInput [matDatepicker]="picker" [formControlName]="metadataDefinition.name">
+                                <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+                                <mat-datepicker #picker></mat-datepicker>
+                            </mat-form-field>
+                            <mat-form-field appearance="fill" *ngSwitchCase="data.metadataTypes.MULTI_VALUED">
+                                <mat-label>{{metadataDefinition.label}}</mat-label>
+                                <mat-select [formControlName]="metadataDefinition.name">
+                                    <mat-option *ngFor="let value of metadataDefinition.allowedValues" [value]="value">
+                                        {{value}}
+                                    </mat-option>
+                                </mat-select>
+                            </mat-form-field>
+
+                            <mat-form-field appearance="fill" *ngSwitchCase="data.metadataTypes.REFERENCE">
+                                <mat-label>{{metadataDefinition.label}}</mat-label>
+                                <input type="text" placeholder="Start Typing..." matInput [formControlName]="metadataDefinition.name" [matAutocomplete]="auto">
+                                <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayAutocomplete">
+                                    <mat-option *ngFor="let option of data.filteredOptions.get(metadataGroup.id + '.' + metadataDefinition.name) | async" [value]="option">
+                                        {{option.representation}}
+                                    </mat-option>
+                                </mat-autocomplete>
+                            </mat-form-field>                            
+                            <div *ngSwitchDefault>
+                                Ho
+                            </div>
+                        </ng-container>   
+                    </li>
+                </ng-container>
+            </div>
+            <button mat-button (click)="onNoClick()">No Thanks</button>
+            <button mat-button [mat-dialog-close]="data.metadataForm" cdkFocusInitial>Ok</button>
+        </form>
+    </ul>    
+</mat-dialog-content>

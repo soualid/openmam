@@ -1,0 +1,36 @@
+<h1 mat-dialog-title>Create version</h1>
+<mat-dialog-content>
+  <p>Name the version you're creating.</p>
+
+  <mat-form-field appearance="fill">
+    <mat-label>Version name</mat-label>
+    <input matInput [(ngModel)]="data.name">
+  </mat-form-field>
+    
+  <p>Select at least an audio stream to attach, and<br/>
+    the primary language of the version you're creating.
+  </p>
+  
+  <mat-form-field appearance="fill">
+    <mat-label>Select version primary language</mat-label>
+    <mat-select [(ngModel)]="data.selectedLanguage">
+      <mat-option *ngFor="let language of data.availableLanguages" [value]="language.code">
+        {{language.name}}
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <mat-form-field appearance="fill">
+    <mat-label>Pick an audio</mat-label>
+    <mat-select [(ngModel)]="data.selectedAudio">
+      <mat-option *ngFor="let stream of data.availableAudios" [value]="stream.id">
+        stream #{{stream.streamIndex}} ({{stream.type}}) in {{stream.filename}} 
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <div mat-dialog-actions>
+    <button mat-button (click)="onNoClick()">Cancel</button>
+    <button mat-button [mat-dialog-close]="data" cdkFocusInitial>Ok</button>
+  </div>  
+</mat-dialog-content>

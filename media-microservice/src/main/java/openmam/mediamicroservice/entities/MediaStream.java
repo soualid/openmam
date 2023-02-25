@@ -10,10 +10,11 @@ import java.util.Date;
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class MediaStream {
 
-    public static MediaStream from(Status status) {
+    public static MediaStream from(Status status, Long id) {
         var mediaStream = new MediaStream();
         mediaStream.setStatus(status);
         mediaStream.setCreationDate(null);
+        mediaStream.setId(id);
         return mediaStream;
     }
 
