@@ -2,7 +2,10 @@ package openmam.mediamicroservice.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.databind.JsonNode;
+import io.hypersistence.utils.hibernate.type.json.JsonType;
 import jakarta.persistence.*;
+import org.hibernate.annotations.Type;
 
 import java.util.List;
 
@@ -48,16 +51,17 @@ public class MediaElement {
         this.media = media;
     }
 
-    public String getFullMetadatas() {
+    public JsonNode getFullMetadatas() {
         return fullMetadatas;
     }
 
-    public void setFullMetadatas(String fullMetadatas) {
+    public void setFullMetadatas(JsonNode fullMetadatas) {
         this.fullMetadatas = fullMetadatas;
     }
 
-    @Column(columnDefinition="TEXT")
-    private String fullMetadatas;
+    @Type(JsonType.class)
+    @Column(columnDefinition = "jsonb")
+    private JsonNode fullMetadatas;
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "mediaElement")
     private List<MediaStream> streams;
