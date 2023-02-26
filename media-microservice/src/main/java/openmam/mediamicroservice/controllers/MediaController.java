@@ -124,12 +124,12 @@ class MediaController {
         Files.walkFileTree(Path.of(location.getPath()), finder);
         var results = finder.done();
         logger.info("results: " + results);
+        var mapper = new ObjectMapper();
 
         for (var result : results) {
           String output = ProcBuilder.run("ffprobe", "-v", "quiet", "-show_format", "-show_streams", "-print_format", "json", result.getAbsolutePath());
           logger.info("output: " + output);
 
-          ObjectMapper mapper = new ObjectMapper();
           var response = mapper.readValue(output, FFProbeResponse.class);
           logger.info("output: " + response);
 
@@ -137,7 +137,7 @@ class MediaController {
           mediaElement.setFilename(result.getName());
           mediaElement.setLocation(location);
           mediaElement.setMedia(media);
-          mediaElement.setFullMetadatas(output);
+          mediaElement.setFullMetadatas(mapper.readTree(output));
           mediaElementRepository.save(mediaElement);
 
           for (var stream : response.streams) {

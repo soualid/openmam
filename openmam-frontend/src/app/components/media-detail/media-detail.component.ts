@@ -305,7 +305,7 @@ export class MediaDetailComponent implements OnInit {
     console.log('openMetadata');
 
     const dialogRef = this.dialog.open(MetadataDialog, {
-      data: { metadata: element.fullMetadatas },
+      data: { metadata: JSON.stringify(element.fullMetadatas, null, "  ") },
     });
 
     dialogRef.afterOpened().subscribe(() => {
