@@ -73,7 +73,7 @@ public class SchedulingService {
             task.setMediaElement(mediaStream.getMediaElement());
             task.setMedia(mediaStream.getMediaElement().getMedia());
             task.setStatus(Task.Status.PENDING);
-            task.setCreatedBy("todo");
+            task.setCreatedBy("first_ingest");
             task.setType(Task.Type.GENERATE_VARIANTS);
             mediaStreamRepository.save(mediaStream);
             return taskRepository.save(task);

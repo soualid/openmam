@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 
 @Service
 public class MediaService {
@@ -23,7 +24,6 @@ public class MediaService {
         #EXTM3U
         #EXT-X-VERSION:4
                     
-        # AUDIO groups
         """;
         MediaStream video = null;
         for (var element: media.getElements()) {
@@ -34,17 +34,46 @@ public class MediaService {
                 }
             }
         }
+
+        var subtitles = new ArrayList<MediaStream>();
+        for (var element: media.getElements()) {
+            for (var stream: element.getStreams()) {
+                if (stream.getType() == MediaStream.Type.SUBTITLE) {
+                    subtitles.add(stream);
+                    break;
+                }
+            }
+        }
+        if (subtitles.size() > 0) {
+            buffer += """
+                    # SUBTITLES groups
+                    """;
+        }
+        for (var subtitle : subtitles) {
+            // TODO Language, default
+            buffer += """
+                    #EXT-X-MEDIA:TYPE=SUBTITLES,GROUP-ID="subs",NAME="English",DEFAULT=NO,FORCED=NO,URI="%s_subtitle_%s_%s/playlist.m3u8",LANGUAGE="en"
+                    """.formatted(media.getId(), subtitle.getMediaElement().getId(), subtitle.getStreamIndex());
+        }
+
+        buffer += """
+                
+                # AUDIO groups
+                """;
         for (var version: media.getVersions()) {
             var audio = version.getAudio();
+            // TODO default
             buffer += """
           #EXT-X-MEDIA:TYPE=AUDIO,GROUP-ID="audio",LANGUAGE="%s", NAME="%s",AUTOSELECT=YES,DEFAULT=YES,CHANNELS="2",URI="%s"
           """.formatted(version.getLanguage(), version.getName(),
                     "%s_audio_%s_%s/playlist.m3u8".formatted(media.getId(), audio.getMediaElement().getId(), audio.getStreamIndex()));
         }
+
+        var subtitlesSuffix = subtitles.size() > 0 ? ",SUBTITLES=\"subs\"": "";
         buffer += """
-        #EXT-X-STREAM-INF:BANDWIDTH=6134000,RESOLUTION=1024x458,CODECS="avc1.4d001f,mp4a.40.2",AUDIO="audio"
+        #EXT-X-STREAM-INF:BANDWIDTH=6134000,RESOLUTION=1024x458,CODECS="avc1.4d001f,mp4a.40.2",AUDIO="audio"%s
         %s_video_%s_%s/playlist.m3u8            
-        """.formatted(media.getId(), video.getMediaElement().getId(), video.getStreamIndex());
+        """.formatted(subtitlesSuffix, media.getId(), video.getMediaElement().getId(), video.getStreamIndex());
 
         try {
             // TODO Dynamic

@@ -1,8 +1,8 @@
-import { Component, OnInit, Inject } from '@angular/core';
+import { Component, OnInit, Inject, HostListener } from '@angular/core';
 import { Observable, of, map } from 'rxjs';
 import { startWith, switchMap, distinctUntilChanged, debounceTime } from 'rxjs/operators';
 import { ActivatedRoute, ParamMap } from '@angular/router';
-import { Media, MediaElement, Audio, Location, MediaStream, MediaVersion } from 'src/app/models/media';
+import { Media, MediaElement, Audio, Location, MediaStream, MediaVersion, Subtitle } from 'src/app/models/media';
 import { MediaService } from 'src/app/services/media.service';
 import { MatDialog, MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MetadataService } from 'src/app/services/metadata.service';
@@ -91,6 +91,19 @@ export class MediaDetailComponent implements OnInit {
       if (Hls.isSupported()) {
         var hls = new Hls();
         dialogRef.componentInstance.hls = hls;
+        hls.on(Hls.Events.SUBTITLE_TRACKS_UPDATED, function(event:any, data:any) {
+          console.log(event, data)
+
+          for (const a of data.subtitleTracks) {
+            dialogRef.componentInstance.subtitles.push({
+              code: a.lang,
+              name: a.name
+            })
+            if (a.autoselect) {
+              dialogRef.componentInstance.selectedSubtitle = a.lang
+            }
+          }
+        });
         hls.on(Hls.Events.AUDIO_TRACKS_UPDATED, function(event:any, data:any) {
           console.log(event, data)
           for (const a of data.audioTracks) {
@@ -105,6 +118,8 @@ export class MediaDetailComponent implements OnInit {
         });
         hls.loadSource(videoSrc);
         hls.attachMedia(video);  
+        video.play();
+        setTimeout(() => { video.focus() }, 200);
       } else {
         video.src = videoSrc;
       }
@@ -340,6 +355,7 @@ export class MediaDetailComponent implements OnInit {
 
 @Component({
   selector: 'dialog-player',
+  styleUrls: ['./dialog-player.sass'],
   templateUrl: './dialog-player.html',
 })
 export class PlayerDialog {
@@ -352,10 +368,38 @@ export class PlayerDialog {
   ) {}
 
   audios: Audio[] = []
+  subtitles: Subtitle[] = []
   selectedTrack?: string = undefined
+  selectedSubtitle?: string = undefined
   
   onNoClick(): void {
     this.dialogRef.close();
+  }
+
+
+  @HostListener('window:keyup', ['$event'])
+  keyEvent(event: KeyboardEvent) {
+    console.log(event);
+    if (event.key === 'j') this.nextFrame(event, true)
+    else if (event.key === 'k') this.nextFrame(event)
+  }
+
+  nextFrame(event:any, backward:boolean=false): void {
+    event.preventDefault();
+    var video:HTMLVideoElement = document.getElementById('video') as HTMLVideoElement;
+    let step = (1.0/25.0)
+    if (backward) step = -step
+    video.currentTime = video.currentTime + step
+    console.log('next frame', video.currentTime)
+  }
+
+  subtitleTrackChanged(event:any): void {
+    if (event.isUserInput) {
+      console.log('subtitleTrackChanged', event, this.dialogRef.componentInstance.selectedSubtitle, this.hls.subtitleTracks);
+      const selection = this.hls.subtitleTracks.find((a:any) => a.lang === event.source.value)
+      console.log(selection)
+      this.hls.subtitleTrack = selection.id
+    }
   }
 
   audioTrackChanged(event:any): void {

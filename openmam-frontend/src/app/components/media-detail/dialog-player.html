@@ -1,12 +1,35 @@
-<div style="padding: 30px;">
-    <div><video id="video" controls width="700"></video></div>
+<div class="container">
+  <video id="video" controls width="700"></video>
+
+  <div class="bottom">
+  
+    <mat-form-field appearance="fill" style="margin-right: 10px;">
+      <mat-label>Audio tracks</mat-label>
+      <mat-select [(value)]="selectedTrack">
+        <mat-option *ngFor="let audio of audios" [value]="audio.code" (onSelectionChange)="audioTrackChanged($event)">
+          {{audio.name}}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
 
     <mat-form-field appearance="fill">
-        <mat-label>Audio tracks</mat-label>
-        <mat-select [(value)]="selectedTrack">
-          <mat-option *ngFor="let audio of audios" [value]="audio.code" (onSelectionChange)="audioTrackChanged($event)">
-            {{audio.name}}
-          </mat-option>
-        </mat-select>
-      </mat-form-field>
+      <mat-label>Subtitle tracks</mat-label>
+      <mat-select [(value)]="selectedSubtitle">
+        <mat-option *ngFor="let subtitle of subtitles" [value]="subtitle.code" (onSelectionChange)="subtitleTrackChanged($event)">
+          {{subtitle.name}}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+    
+    <div class="tools">
+      <span>Frame navigation</span>
+
+      <button mat-mini-fab color="primary" (click)="nextFrame($event, true)" matTooltip="Keyboard: i">
+        <mat-icon>chevron_left</mat-icon>
+      </button>
+      <button mat-mini-fab color="primary" (click)="nextFrame($event)" matTooltip="Keyboard: j">
+        <mat-icon>navigate_next</mat-icon>
+      </button>
+    </div>
+  </div>
 </div>
