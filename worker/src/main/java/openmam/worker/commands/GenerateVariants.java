@@ -1,5 +1,8 @@
 package openmam.worker.commands;
 
+import fr.noop.subtitle.model.SubtitleParsingException;
+import fr.noop.subtitle.stl.StlParser;
+import fr.noop.subtitle.vtt.VttWriter;
 import org.buildobjects.process.ProcBuilder;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
@@ -9,8 +12,14 @@ import org.springframework.shell.standard.ShellOption;
 import org.springframework.web.util.UriComponentsBuilder;
 import openmam.worker.dto.Task;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.logging.Logger;
 
@@ -26,19 +35,9 @@ public class GenerateVariants {
         switch (result.mediaStream.type) {
             case AUDIO -> handleAudioTranscoding(result);
             case VIDEO -> handleVideoTranscoding(result);
+            case SUBTITLE -> handleSubtitleTranscoding(result);
         }
 
-        // TODO Update master playlist
-/*
-#EXTM3U
-#EXT-X-VERSION:4
-
-# AUDIO groups
-#EXT-X-MEDIA:TYPE=AUDIO,GROUP-ID="audio",LANGUAGE="en", NAME="English",AUTOSELECT=YES,DEFAULT=YES,CHANNELS="2",URI="audio_0/playlist.m3u8"
-
-#EXT-X-STREAM-INF:BANDWIDTH=6134000,RESOLUTION=1024x458,CODECS="avc1.4d001f,mp4a.40.2",AUDIO="audio"
-video_0-0/playlist.m3u8
- */
     }
 
     private static void handleAudioTranscoding(Task task)  {
@@ -70,6 +69,46 @@ video_0-0/playlist.m3u8
         log.info("output: " + output.getCommandLine());
         log.info("ended");
     }
+    private static void handleSubtitleTranscoding(Task task)  {
+        // TODO handle other subtitle format, only EBU STL is supported for now
+        var stlParser = new StlParser();
+        var sourcePath = Paths.get(task.mediaElement.location.path)
+                .resolve(task.mediaElement.filename);
+        var destinationPath = Paths.get(task.mediaElement.location.path)
+                .resolve("variants")
+                .resolve(task.media.id + "_subtitle_"+ task.mediaElement.id + "_0");
+        destinationPath.toFile().mkdirs();
+        var destinationPlaylistPath = destinationPath.resolve("playlist.m3u8");
+        destinationPath = destinationPath.resolve("subtitle.vtt");
+        try {
+            // Create VTT variant for HLS playback
+            var subtitle = stlParser.parse(new FileInputStream(sourcePath.toFile()));
+            var vttWriter = new VttWriter("utf-8");
+            vttWriter.write(subtitle, new FileOutputStream(destinationPath.toFile()));
+
+            // Create HLS playlist
+            // TODO dynamic duration
+            var hlsPlaylist = """
+                    #EXTM3U
+                    #EXT-X-VERSION:4
+                    #EXT-X-TARGETDURATION:%s
+                    #EXT-X-MEDIA-SEQUENCE:0
+                    #EXTINF:%s,
+                    #EXT-X-BYTERANGE:%s@0
+                    subtitle.vtt
+                    #EXT-X-ENDLIST                    
+                    """.formatted("20", "20.000000", "3866784");
+            Files.write(destinationPlaylistPath, hlsPlaylist.getBytes("UTF-8"));
+        } catch (SubtitleParsingException e) {
+            throw new RuntimeException(e);
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
+
     private static void handleVideoTranscoding(Task task)  {
         // TODO handle S3
         var sourcePath = Paths.get(task.mediaElement.location.path)
@@ -77,7 +116,7 @@ video_0-0/playlist.m3u8
         var destinationPath = Paths.get(task.mediaElement.location.path)
                 .resolve("variants");
         var thumbnailPath = destinationPath.resolve(task.media.id + ".png");
-        destinationPath = destinationPath.resolve(task.media.id + "_video_"+ task.mediaElement.id + "_0");
+        destinationPath = destinationPath.resolve(task.media.id + "_video_"+ task.mediaElement.id + "_" + task.mediaStream.streamIndex);
         destinationPath.toFile().mkdirs();
 
         // extract a thumbnail from the first frame

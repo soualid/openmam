@@ -151,12 +151,13 @@ class MediaController {
             mediaStream.setCodecTagString(stream.codecTagString);
             mediaStream.setCodecType(stream.codecType);
 
-            // TODO handle subtitles as well
             var streamType = switch (stream.codecType) {
               case "video":
                 yield MediaStream.Type.VIDEO;
               case "audio":
                 yield MediaStream.Type.AUDIO;
+              case "subtitle":
+                yield MediaStream.Type.SUBTITLE;
               default:
                 throw new RuntimeException("unknown type");
             };

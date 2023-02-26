@@ -51,3 +51,7 @@ export interface Audio {
     name?: string;
     code?: string;
 }
+export interface Subtitle {
+    name?: string;
+    code?: string;
+}
