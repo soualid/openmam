@@ -1,0 +1,47 @@
+<h1>Users</h1>
+
+<table mat-table [dataSource]="dataSource" class="mat-elevation-z8" *ngIf="result?.numberOfElements; else firstLoad">
+    <tr mat-header-row *matHeaderRowDef="columnsToDisplay"></tr>
+
+    <ng-container matColumnDef="id">
+      <th mat-header-cell *matHeaderCellDef> ID </th>
+      <td mat-cell *matCellDef="let element"> {{element.id}} </td>
+    </ng-container>
+
+    <ng-container matColumnDef="email">
+      <th mat-header-cell *matHeaderCellDef> Email </th>
+      <td mat-cell *matCellDef="let element"> <span class="code">{{element.email}}</span> </td>
+    </ng-container>
+
+    <ng-container matColumnDef="firstName">
+      <th mat-header-cell *matHeaderCellDef> First Name </th>
+      <td mat-cell *matCellDef="let element"> {{element.firstName}} </td>
+    </ng-container>    
+    
+    <ng-container matColumnDef="lastName">
+      <th mat-header-cell *matHeaderCellDef> Last Name </th>
+      <td mat-cell *matCellDef="let element"> {{element.lastName}} </td>
+    </ng-container>    
+    
+    <ng-container matColumnDef="roles">
+      <th mat-header-cell *matHeaderCellDef> Roles </th>
+      <td mat-cell *matCellDef="let element"> 
+        <ul>
+          <li class="code" *ngFor="let role of element.roles">{{role}}</li>
+        </ul>
+      </td>
+    </ng-container>    
+    
+    <tr mat-row *matRowDef="let row; columns: columnsToDisplay;"></tr>
+</table>
+
+
+<ng-template #firstLoad>
+    <div *ngIf="loading; else empty">
+        <mat-spinner></mat-spinner>
+    </div>
+</ng-template>
+<ng-template #empty>
+    <h2>Hell, it's empty!</h2>
+    <p>Your tasks will be displayed there.</p>
+</ng-template>

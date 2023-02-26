@@ -1,7 +1,7 @@
 <div class="main">
 
   <mat-sidenav-container class="main">
-    <mat-sidenav mode="side" opened>
+    <mat-sidenav mode="side" opened *ngIf="currentUser">
       <app-menu></app-menu>
     </mat-sidenav>
     <mat-sidenav-content>

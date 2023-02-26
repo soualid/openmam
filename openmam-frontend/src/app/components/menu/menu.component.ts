@@ -1,4 +1,6 @@
 import { Component } from '@angular/core';
+import { User } from 'src/app/models/user';
+import { UserService } from 'src/app/services/user.service';
 
 @Component({
   selector: 'app-menu',
@@ -6,6 +8,23 @@ import { Component } from '@angular/core';
   styleUrls: ['./menu.component.sass']
 })
 export class MenuComponent {
+  
+  currentUser: User | undefined;
+
+  constructor(private userService: UserService) {
+    this.currentUser = userService.currentUser
+    console.log('current user menu', this.currentUser)
+    userService.execChange.subscribe((value) => {
+      console.log('menu', this.currentUser)
+      this.currentUser = value
+    })
+  }
+
+  logout(event:any) {
+    event.preventDefault()
+    this.userService.doLogout()
+  }
+    
   links = [{
     title: 'Home',
     icon: 'home',
@@ -30,5 +49,10 @@ export class MenuComponent {
     title: 'Metadata schemas',
     icon: 'extension',
     target: '/metadata_schema'
+  },
+  {
+    title: 'Users',
+    icon: 'group',
+    target: '/users'
   }]
 }

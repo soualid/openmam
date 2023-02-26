@@ -2,16 +2,20 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { HomeComponent } from './components/home/home.component';
 import { LocationsComponent } from './components/locations/locations.component';
+import { LoginComponent } from './components/login/login.component';
 import { MediaDetailComponent } from './components/media-detail/media-detail.component';
 import { MetadataSchemaDetailComponent } from './components/metadata-schema-detail/metadata-schema-detail.component';
 import { MetadataSchemaComponent } from './components/metadata-schema/metadata-schema.component';
 import { SearchComponent } from './components/search/search.component';
 import { TasksComponent } from './components/tasks/tasks.component';
+import { UsersComponent } from './components/users/users.component';
 
 
 const routes: Routes = [
   { path: '', redirectTo: '/home', pathMatch: 'full' },
   { path: 'home', component: HomeComponent },
+  { path: 'login', component: LoginComponent },
+  { path: 'users', component: UsersComponent },
   { path: 'media/:id', component: MediaDetailComponent },
   { path: 'search', component: SearchComponent },
   { path: 'tasks', component: TasksComponent },
