@@ -86,7 +86,7 @@ export class MediaDetailComponent implements OnInit {
     });
     dialogRef.afterOpened().subscribe(() => {
       var video:HTMLVideoElement = document.getElementById('video') as HTMLVideoElement;
-      var videoSrc = `/api/san/variants/master_${this.result.id}.m3u8`;
+      var videoSrc = `/api/static/san/variants/master_${this.result.id}.m3u8`;
       
       if (Hls.isSupported()) {
         var hls = new Hls();

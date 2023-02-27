@@ -161,7 +161,7 @@
 
         </div>
 
-        <div class="preview" [ngStyle]="{'background-image': 'url(/api/san/variants/' + result.id + '.png)'}" *ngIf="result.elements?.length">
+        <div class="preview" [ngStyle]="{'background-image': 'url(/api/static/san/variants/' + result.id + '.png)'}" *ngIf="result.elements?.length">
             <a (click)="openPlayer()"><mat-icon class="icon-display">play_circle</mat-icon></a>
         </div>        
     </div>

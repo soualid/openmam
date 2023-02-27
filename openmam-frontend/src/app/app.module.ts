@@ -11,6 +11,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatIconModule } from "@angular/material/icon";
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatTableModule } from '@angular/material/table';
+import { MatCardModule } from '@angular/material/card';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { MatSelectModule } from '@angular/material/select';
@@ -22,13 +23,17 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { CreateDialog, SearchComponent } from './components/search/search.component';
 import { HomeComponent } from './components/home/home.component';
-import { HttpClientModule, HttpRequest } from '@angular/common/http';
+import { HttpClientModule, HttpRequest, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { IngestDialog, CreateVersionDialog, MediaDetailComponent, MetadataDialog, MoveMediaDialog, PlayerDialog, UserMetadataDialog } from './components/media-detail/media-detail.component';
 import { LocationsComponent } from './components/locations/locations.component';
 import { NgHttpCachingConfig, NgHttpCachingModule, NgHttpCachingStrategy } from 'ng-http-caching';
 import { TasksComponent } from './components/tasks/tasks.component';
 import { MetadataSchemaComponent } from './components/metadata-schema/metadata-schema.component';
 import { MetadataSchemaDetailComponent } from './components/metadata-schema-detail/metadata-schema-detail.component';
+import { LoginComponent } from './components/login/login.component';
+import { AuthInterceptor } from './auth/auth.interceptor';
+import { UserService } from './services/user.service';
+import { UsersComponent } from './components/users/users.component';
 
 const ngHttpCachingConfig: NgHttpCachingConfig = {
   lifetime: Number.MAX_VALUE,
@@ -54,18 +59,22 @@ const ngHttpCachingConfig: NgHttpCachingConfig = {
     IngestDialog,
     CreateDialog,
     UserMetadataDialog,
+    LoginComponent,
     LocationsComponent,
     MoveMediaDialog, 
     CreateVersionDialog, 
     TasksComponent,
     MetadataSchemaComponent,
     MetadataSchemaDetailComponent,
+    LoginComponent,
+    UsersComponent,
   ],
   imports: [
     BrowserModule,
     AppRoutingModule,
     MatListModule,
     MatIconModule,
+    MatCardModule,
     MatSlideToggleModule,
     MatTableModule,
     MatSidenavModule,
@@ -77,8 +86,7 @@ const ngHttpCachingConfig: NgHttpCachingConfig = {
     MatDialogModule,
     MatButtonModule,
     MatSelectModule,
-    MatNativeDateModule,
-    
+    MatNativeDateModule,    
     MatMenuModule,
     FormsModule,
     MatAutocompleteModule,
@@ -86,7 +94,10 @@ const ngHttpCachingConfig: NgHttpCachingConfig = {
     MatProgressSpinnerModule,
     ReactiveFormsModule
   ],
-  providers: [],
+  providers: [
+    { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },
+    UserService
+  ],
   schemas: [ CUSTOM_ELEMENTS_SCHEMA ],
   bootstrap: [AppComponent]
 })

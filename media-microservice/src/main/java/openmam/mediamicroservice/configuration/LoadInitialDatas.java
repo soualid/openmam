@@ -11,9 +11,9 @@ import openmam.mediamicroservice.entities.Media;
 import openmam.mediamicroservice.repositories.MediaRepository;
 
 //@Configuration
-class LoadDatabase {
+class LoadInitialDatas {
 
-  private static final Logger log = LoggerFactory.getLogger(LoadDatabase.class);
+  private static final Logger log = LoggerFactory.getLogger(LoadInitialDatas.class);
 
   @Bean
   CommandLineRunner initDatabase(MediaRepository mediaRepository,

@@ -1,0 +1,20 @@
+<div class="center">
+    <mat-card>
+        <mat-card-content>
+            <h1>Open MAM Login</h1>
+
+            <mat-form-field appearance="fill">
+                <mat-label>Login</mat-label>
+                <input matInput [(ngModel)]="login">
+            </mat-form-field> 
+            <br/>
+            <mat-form-field appearance="fill">
+                <mat-label>Password</mat-label>
+                <input matInput [(ngModel)]="password" type="password">
+            </mat-form-field>
+            <br/>
+
+            <button mat-stroked-button (click)="doLogin($event)">OK</button>
+        </mat-card-content>
+    </mat-card>
+</div>

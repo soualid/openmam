@@ -1,10 +1,18 @@
 
 <h1 style="padding: 0 20px 0 20px; margin :0; text-align: center;">Open MAM 0.1</h1>
-
 <mat-nav-list>
     <mat-list-item *ngFor="let link of links">
         <a [routerLink]="link.target" routerLinkActive="active-list-item" matListItemTitle href="...">
             <mat-icon>{{ link.icon }}</mat-icon> {{ link.title }}
+        </a>
+    </mat-list-item>
+    <mat-list-item>
+        <a (click)="logout($event)" class="logout">
+            <mat-icon>logout</mat-icon> 
+            <div>
+                Logout<br/>
+                <span class="logged">{{currentUser?.username}}</span>
+            </div>
         </a>
     </mat-list-item>
 </mat-nav-list>
