@@ -16,15 +16,18 @@ Open MAM aims to provide an open and powerful ecosystem for your media assets, i
 - Multiple input files or essence per assets
 - Multiple essence containers indexation
 - Asynchronous generation of multi video/audio and subtitles HLS stream for low-res playback, compatible with mobile playback
+- Secured API and UI using spring security users, roles and privileges management 
+- Custom user-defined metadatas schema management
+- S3 locations support
+- Move assets and variants between locations
+- Subtitle ingestion and playback support (EBU STL, TTML)
 
 Next things to be implemented:
 
-- User management
-- Custom user-defined metadatas schema management
-- S3 locations support (ingest, playback)
-- Move assets and variants between locations
-- Globally improved UI
+- Partner upload slot
+- UI for users management (only available through the API for now)
+- UI for metadata management (only available through the API for now)
+- Metadata schema security based on users, roles or privileges (read, write)
 - Setup instructions
-- Subtitle ingestion and playback support (EBU STL, TTML)
 - Documentation
 
