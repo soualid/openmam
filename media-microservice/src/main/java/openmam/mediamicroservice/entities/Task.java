@@ -1,7 +1,10 @@
 package openmam.mediamicroservice.entities;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.JsonNode;
+import io.hypersistence.utils.hibernate.type.json.JsonType;
 import jakarta.persistence.*;
+import org.hibernate.annotations.Type;
 
 import java.util.Date;
 
@@ -19,6 +22,7 @@ public class Task {
     public enum Type {
         SCAN,
         GENERATE_VARIANTS,
+        CALL_VANTAGE_WORKFLOW,
         MOVE_ASSET
     }
 
@@ -121,6 +125,18 @@ public class Task {
     }
 
     private String lockedBy;
+
+    public JsonNode getAdditionalJobInputs() {
+        return additionalJobInputs;
+    }
+
+    public void setAdditionalJobInputs(JsonNode additionalJobInputs) {
+        this.additionalJobInputs = additionalJobInputs;
+    }
+
+    @org.hibernate.annotations.Type(JsonType.class)
+    @Column(columnDefinition = "jsonb")
+    private JsonNode additionalJobInputs;
 
     public Type getType() {
         return type;

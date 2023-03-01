@@ -1,5 +1,7 @@
 package openmam.worker.dto;
 
+import com.fasterxml.jackson.databind.JsonNode;
+
 import javax.print.attribute.standard.Media;
 import java.util.List;
 
@@ -10,6 +12,8 @@ public class Task {
     public Media media;
     public Location destinationLocation;
     public TaskType type;
+
+    public JsonNode additionalJobInputs;
 
     public enum MediaStreamType {
         AUDIO, VIDEO, SUBTITLE
