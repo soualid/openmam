@@ -51,6 +51,11 @@ export class MenuComponent {
     target: '/metadata_schema'
   },
   {
+    title: 'Partner upload',
+    icon: 'upload',
+    target: '/partner_upload'
+  },
+  {
     title: 'Users',
     icon: 'group',
     target: '/users'

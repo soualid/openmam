@@ -6,6 +6,7 @@ import { LoginComponent } from './components/login/login.component';
 import { MediaDetailComponent } from './components/media-detail/media-detail.component';
 import { MetadataSchemaDetailComponent } from './components/metadata-schema-detail/metadata-schema-detail.component';
 import { MetadataSchemaComponent } from './components/metadata-schema/metadata-schema.component';
+import { PartnerUploadComponent } from './components/partner-upload/partner-upload.component';
 import { SearchComponent } from './components/search/search.component';
 import { TasksComponent } from './components/tasks/tasks.component';
 import { UsersComponent } from './components/users/users.component';
@@ -15,6 +16,7 @@ const routes: Routes = [
   { path: '', redirectTo: '/home', pathMatch: 'full' },
   { path: 'home', component: HomeComponent },
   { path: 'login', component: LoginComponent },
+  { path: 'partner_upload', component: PartnerUploadComponent },
   { path: 'users', component: UsersComponent },
   { path: 'media/:id', component: MediaDetailComponent },
   { path: 'search', component: SearchComponent },

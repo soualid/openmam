@@ -23,10 +23,9 @@ export class UserService {
     private http: HttpClient,
     private router: Router) { 
       const auth = localStorage.getItem('auth')
-      if (auth) {
+      if (auth && auth != "undefined") {
         this.currentUser = JSON.parse(auth)
         this.userChanged(this.currentUser!)
-        this.router.navigate(['login']);
       }
     }
 
@@ -42,11 +41,23 @@ export class UserService {
       );
   }
 
+  getAutocompleteData<Data>(roleName:string, prefix:string): Observable<User[]> {
+    const url = `/api/users/role/${roleName}?prefix=${prefix}`;
+    return this.http.get<User[]>(url)
+      .pipe(
+        tap(h => {
+          const outcome = h ? 'fetched' : 'did not find';
+          console.log(`${outcome} media prefix=${prefix}`);
+        }),
+        catchError(this.handleError<User[]>(`getAutocompleteData prefix=${prefix}`))
+      );
+  }
+
   doLogout() {
     this.currentUser = undefined
     this.userChanged(this.currentUser)
     localStorage.removeItem('auth')
-    
+    this.router.navigate(['login']);
   }
 
   doLogin<Data>(login:string, password:string): Observable<User> {

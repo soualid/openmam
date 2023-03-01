@@ -6,6 +6,7 @@ import { catchError, map, tap } from 'rxjs/operators';
 
 import { CreateMediaResult, CreateVersionResult, MediaVersion, Media } from '../models/media';
 import { Page } from '../models/page';
+import { Task } from '../models/task';
 
 @Injectable({ providedIn: 'root' })
 export class MediaService {
@@ -68,6 +69,19 @@ export class MediaService {
         catchError(this.handleError<Media>(`getMedia id=${id}`))
       );
   }
+
+
+  getPendingTaskForMedia<Data>(id: number): Observable<Task[]> {
+    const url = `${this.mediaUrl}/${id}/tasks/pending`;
+    return this.http.get<Task[]>(url)
+      .pipe(
+        tap(h => {
+          const outcome = h ? 'fetched' : 'did not find';
+          console.log(`${outcome} media id=${id}`);
+        }),
+        catchError(this.handleError<Task[]>(`getPendingTaskForMedia id=${id}`))
+      );
+  }  
 
   createVersion<Data>(version:MediaVersion, mediaId:number, audioId: number): Observable<Media> {
     const url = `${this.mediaUrl}/${mediaId}/version?audioId=${audioId}`;

@@ -13,7 +13,9 @@ export class AppComponent {
 
   constructor(private userService: UserService) {
     this.currentUser = userService.currentUser
+    console.log('current user in app component', this.currentUser)
     userService.execChange.subscribe((value) => {
+      console.log('current user in app component', value)
       this.currentUser = value
     })
   }

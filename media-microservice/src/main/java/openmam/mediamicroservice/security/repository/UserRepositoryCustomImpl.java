@@ -2,6 +2,7 @@ package openmam.mediamicroservice.security.repository;
 
 import openmam.mediamicroservice.security.converters.UserToUserDTOConverter;
 import openmam.mediamicroservice.security.dto.UserDTO;
+import openmam.mediamicroservice.security.entities.Role;
 import openmam.mediamicroservice.security.entities.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -20,5 +21,9 @@ public class UserRepositoryCustomImpl implements UserRepositoryCustom {
 
     public Page<UserDTO> findAllAsDTO(Pageable p) {;
         return userRepository.findAll(p).map(UserToUserDTOConverter::convert);
+    }
+
+    public Page<UserDTO> findByRolesWithUsernamePrefixAsDTO(Pageable p, long roleId, String prefix) {
+        return userRepository.findByRolesWithUsernamePrefix(p, roleId, prefix).map(UserToUserDTOConverter::convert);
     }
 }

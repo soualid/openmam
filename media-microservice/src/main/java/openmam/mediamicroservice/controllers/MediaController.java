@@ -1,23 +1,21 @@
 package openmam.mediamicroservice.controllers;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import openmam.mediamicroservice.entities.*;
 import openmam.mediamicroservice.repositories.*;
 import openmam.mediamicroservice.services.MediaService;
 import openmam.mediamicroservice.services.SchedulingService;
-import openmam.mediamicroservice.utils.Finder;
-import org.buildobjects.process.ProcBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.security.Principal;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+
+import static openmam.mediamicroservice.entities.MediaStream.Type.VIDEO;
 
 @RestController
 class MediaController {
@@ -27,6 +25,7 @@ class MediaController {
   private final Logger logger = LoggerFactory.getLogger(MediaController.class);
   private final LocationRepository locationRepository;
   private final MediaStreamRepository mediaStreamRepository;
+  private final TaskRepository taskRepository;
   private final SchedulingService schedulingService;
   private final MediaVersionRepository mediaVersionRepository;
   private final MediaService mediaService;
@@ -37,12 +36,14 @@ class MediaController {
                   MediaVersionRepository mediaVersionRepository,
                   MediaStreamRepository mediaStreamRepository,
                   LocationRepository locationRepository,
-                  SchedulingService schedulingService) {
+                  SchedulingService schedulingService,
+                  TaskRepository taskRepository) {
     this.mediaRepository = mediaRepository;
     this.mediaService = mediaService;
     this.mediaElementRepository = mediaElementRepository;
     this.locationRepository = locationRepository;
     this.mediaStreamRepository = mediaStreamRepository;
+    this.taskRepository = taskRepository;
     this.mediaVersionRepository = mediaVersionRepository;
     this.schedulingService = schedulingService;
   }
@@ -75,7 +76,7 @@ class MediaController {
     MediaStream video = null;
     for (var element: media.getElements()) {
       for (var stream: element.getStreams()) {
-        if (stream.getType() == MediaStream.Type.VIDEO) {
+        if (stream.getType() == VIDEO) {
           video = stream;
           break;
         }
@@ -101,88 +102,56 @@ class MediaController {
   }
 
   @PostMapping("/media/{id}/move/{locationId}")
-  List<Task> moveMediaElements(@PathVariable long id, @PathVariable long locationId) {
-    return schedulingService.createMoveAssetTasks(id, locationId);
+  List<Task> moveMediaElements(@PathVariable long id, @PathVariable long locationId, Principal caller) {
+    return schedulingService.createMoveAssetTasks(id, locationId, caller.getName());
+  }
+
+  @PostMapping("/media/{mediaId}/scanCallback")
+  Media scanMediaElementsTaskCallback(@PathVariable long mediaId,
+                                     @RequestBody ScanMediaElementTaskCallbackRequestBody body) {
+    // TODO transactional
+    var media = mediaRepository.getReferenceById(mediaId);
+    body.mediaElement.setMedia(media);
+    var mediaElement = mediaElementRepository.save(body.mediaElement);
+    mediaElement.setStreams(new ArrayList<>());
+    var streamsCount = media.getStreamsCount();
+    for (var stream : body.mediaStreams) {
+      streamsCount++;
+      stream.setMediaElement(mediaElement);
+      stream = mediaStreamRepository.save(stream);
+      mediaElement.getStreams().add(stream);
+      if (stream.getType() == VIDEO && media.getVideo() == null) {
+        media.setVideo(stream);
+      }
+      // automatically schedule transcoding tasks
+      schedulingService.createGenerateVariantsTask(stream.getId());
+    }
+    media.getElements().add(mediaElement);
+    media.setStreamsCount(streamsCount);
+    logger.info("number of elements {}", (long) media.getElements().size());
+    media.setElementsCount((long) media.getElements().size());
+    logger.info("number of elements {}", media.getElementsCount());
+
+    return mediaRepository.save(media);
+  }
+
+  public static class ScanMediaElementTaskCallbackRequestBody {
+    public MediaElement mediaElement;
+    public List<MediaStream> mediaStreams;
   }
 
   @PostMapping("/media/{id}/scan")
-  void scanMediaElementsForMediaId(@PathVariable long id, @RequestBody ScanParameters scanParameters) {
+  Task scanMediaElementsForMediaId(@PathVariable long id,
+                                   @RequestBody ScanParameters scanParameters,
+                                   Principal caller) {
     var media = mediaRepository.findById(id).get();
     logger.info("id: " + id +
             " media: " + media +
             " parameters: " + scanParameters.locationId + " / " + scanParameters.path);
 
-    // à déporter dans un worker
     var location = locationRepository.getReferenceById(scanParameters.locationId);
-    var streamsCount = media.getStreamsCount();
 
-    // TODO scan from S3
-    if (location.getType() == Location.Type.LOCAL) {
-      logger.info("Looking in " + location.getPath());
-      Finder finder = new Finder(scanParameters.path);
-      try {
-        Files.walkFileTree(Path.of(location.getPath()), finder);
-        var results = finder.done();
-        logger.info("results: " + results);
-        var mapper = new ObjectMapper();
-
-        for (var result : results) {
-          String output = ProcBuilder.run("ffprobe", "-v", "quiet", "-show_format", "-show_streams", "-print_format", "json", result.getAbsolutePath());
-          logger.info("output: " + output);
-
-          var response = mapper.readValue(output, FFProbeResponse.class);
-          logger.info("output: " + response);
-
-          var mediaElement = new MediaElement();
-          mediaElement.setFilename(result.getName());
-          mediaElement.setLocation(location);
-          mediaElement.setMedia(media);
-          mediaElement.setFullMetadatas(mapper.readTree(output));
-          mediaElementRepository.save(mediaElement);
-
-          for (var stream : response.streams) {
-            streamsCount++;
-
-            var mediaStream = new MediaStream();
-            mediaStream.setMediaElement(mediaElement);
-            mediaStream.setStatus(MediaStream.Status.LOCKED);
-            mediaStream.setCodecLongName(stream.codecLongName);
-            mediaStream.setCodecName(stream.codecName);
-            mediaStream.setCodecTagString(stream.codecTagString);
-            mediaStream.setCodecType(stream.codecType);
-
-            var streamType = switch (stream.codecType) {
-              case "video":
-                yield MediaStream.Type.VIDEO;
-              case "audio":
-                yield MediaStream.Type.AUDIO;
-              case "subtitle":
-                yield MediaStream.Type.SUBTITLE;
-              default:
-                throw new RuntimeException("unknown type");
-            };
-
-            if (streamType == MediaStream.Type.VIDEO && media.getVideo() == null) {
-              media.setVideo(mediaStream);
-            }
-
-            mediaStream.setType(streamType);
-            mediaStream.setStreamIndex(stream.index);
-            mediaStream = mediaStreamRepository.save(mediaStream);
-
-            // automatically schedule transcoding tasks
-            schedulingService.createGenerateVariantsTask(mediaStream.getId());
-          }
-        }
-
-      } catch (IOException e) {
-        throw new RuntimeException(e);
-      }
-    }
-
-    media.setElementsCount((long) media.getElements().size());
-    media.setStreamsCount(streamsCount);
-    mediaRepository.save(media);
+    return schedulingService.createScanTask(media, location, scanParameters.path, caller.getName());
   }
 
   @PostMapping("/media")
@@ -214,18 +183,21 @@ class MediaController {
 
   @GetMapping("/medias/{id}")
   Media one(@PathVariable Long id) {
-    
+
     return mediaRepository.findById(id)
-      .orElseThrow(() -> new MediaNotFoundException(id));
+            .orElseThrow(() -> new MediaNotFoundException(id));
+  }
+
+  @GetMapping("/media/{id}/tasks/pending")
+  List<Task> getPendingTasksForMedia(@PathVariable Long id) {
+    return taskRepository.findByStatuses(id, Arrays.asList(Task.Status.PENDING, Task.Status.WORKING));
   }
 
   @PutMapping("/medias/{id}")
-  Media replaceMedia(@RequestBody Media media, @PathVariable Long id) {
+  Media updateMedia(@RequestBody Media media, @PathVariable Long id) {
     
     return mediaRepository.findById(id)
-      .map(m -> {
-        return mediaRepository.save(m);
-      })
+      .map(m -> mediaRepository.save(m))
       .orElseGet(() -> {
         media.setId(id);
         return mediaRepository.save(media);
