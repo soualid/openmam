@@ -1,8 +1,10 @@
 package openmam.mediamicroservice.services;
 
-import openmam.mediamicroservice.repositories.LocationRepository;
-import openmam.mediamicroservice.repositories.MediaRepository;
-import openmam.mediamicroservice.repositories.MediaStreamRepository;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import openmam.mediamicroservice.dto.IngestFromPartnerJobsInput;
+import openmam.mediamicroservice.entities.*;
+import openmam.mediamicroservice.repositories.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Example;
@@ -11,37 +13,43 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import openmam.mediamicroservice.entities.MediaStream;
-import openmam.mediamicroservice.entities.Task;
-import openmam.mediamicroservice.repositories.TaskRepository;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import static openmam.mediamicroservice.entities.Configuration.Key.PARTNER_UPLOAD_INGEST_LOCATION;
+import static openmam.mediamicroservice.entities.Configuration.Key.PARTNER_UPLOAD_LOCATION;
 import static openmam.mediamicroservice.entities.Task.Status.SUCCEEDED;
+import static org.aspectj.weaver.tools.cache.SimpleCacheFactory.path;
 
 @Service
 public class SchedulingService {
 
     private final MediaStreamRepository mediaStreamRepository;
     private final TaskRepository taskRepository;
+    private final PartnerUploadRequestRepository partnerUploadRequestRepository;
     private final Logger logger = LoggerFactory.getLogger(SchedulingService.class);
     private final MediaRepository mediaRepository;
     private final LocationRepository locationRepository;
+    private final ConfigurationRepository configurationRepository;
 
     public SchedulingService(MediaStreamRepository mediaStreamRepository,
                              LocationRepository locationRepository,
                              MediaRepository mediaRepository,
-                             TaskRepository taskRepository) {
+                             ConfigurationRepository configurationRepository,
+                             TaskRepository taskRepository,
+                             PartnerUploadRequestRepository partnerUploadRequestRepository) {
         this.mediaStreamRepository = mediaStreamRepository;
         this.taskRepository = taskRepository;
         this.mediaRepository = mediaRepository;
-        this.locationRepository = locationRepository; 
+        this.configurationRepository = configurationRepository;
+        this.locationRepository = locationRepository;
+        this.partnerUploadRequestRepository = partnerUploadRequestRepository;
     }
 
     @Transactional
-    public List<Task> createMoveAssetTasks(Long mediaId, Long locationId) {
+    public List<Task> createMoveAssetTasks(Long mediaId, Long locationId, String caller) {
         var media = mediaRepository.getReferenceById(mediaId);
         var location = locationRepository.getReferenceById(locationId);
         var result = new ArrayList<Task>();
@@ -50,11 +58,54 @@ public class SchedulingService {
         task.setDestinationLocation(location);
         task.setMedia(media);
         task.setStatus(Task.Status.PENDING);
-        task.setCreatedBy("todo");
+        task.setCreatedBy(caller);
         task.setType(Task.Type.MOVE_ASSET);
         result.add(taskRepository.save(task));
 
         return result;
+    }
+
+    public Task createIngestPartnerUploadTask(PartnerUploadRequest uploadRequest, String caller) {
+        var task = new Task();
+        task.setCreationDate(new Date());
+        task.setCreatedBy(caller);
+        task.setStatus(Task.Status.PENDING);
+        task.setMedia(uploadRequest.getMedia());
+        task.setType(Task.Type.INGEST_PARTNER_UPLOAD);
+        var objectMapper = new ObjectMapper();
+        var additionalJobsInput = new IngestFromPartnerJobsInput();
+        additionalJobsInput.partnerId = uploadRequest.getPartner().getId();
+        additionalJobsInput.partnerUploadId = uploadRequest.getId();
+        var location = locationRepository.findById(
+                Long.valueOf(configurationRepository.findByKey(PARTNER_UPLOAD_LOCATION).getValue())
+        ).get();
+        additionalJobsInput.sourceLocation = objectMapper.valueToTree(location);
+        var destinationLocation = locationRepository.findById(
+                Long.valueOf(configurationRepository.findByKey(PARTNER_UPLOAD_INGEST_LOCATION).getValue())
+        ).get();
+        task.setDestinationLocation(destinationLocation);
+        task.setAdditionalJobInputs(objectMapper.convertValue(additionalJobsInput, JsonNode.class));
+        return taskRepository.save(task);
+    }
+
+    public static class ScanMediaElementTaskRequestBody {
+        public String scanPath;
+    }
+
+    @Transactional
+    public Task createScanTask(Media media, Location location, String path, String caller) {
+        var task = new Task();
+        task.setCreationDate(new Date());
+        task.setCreatedBy(caller);
+        task.setStatus(Task.Status.PENDING);
+        task.setMedia(media);
+        task.setDestinationLocation(location);
+        task.setType(Task.Type.SCAN);
+        var objectMapper = new ObjectMapper();
+        var additionalJobsInput = new ScanMediaElementTaskRequestBody();
+        additionalJobsInput.scanPath = path;
+        task.setAdditionalJobInputs(objectMapper.convertValue(additionalJobsInput, JsonNode.class));
+        return taskRepository.save(task);
     }
 
     @Transactional
@@ -105,6 +156,12 @@ public class SchedulingService {
                     element.setLocation(task.getDestinationLocation());
                 }
                 mediaRepository.save(task.getMedia());
+            }
+            case INGEST_PARTNER_UPLOAD -> {
+                var partnerUploadId = task.getAdditionalJobInputs().get("partnerUploadId").longValue();
+                var partnerUpload = partnerUploadRequestRepository.getReferenceById(partnerUploadId);
+                partnerUpload.setStatus(PartnerUploadRequest.PartnerUploadStatus.INGESTED);
+                partnerUploadRequestRepository.save(partnerUpload);
             }
         }
         task.setStatus(SUCCEEDED);

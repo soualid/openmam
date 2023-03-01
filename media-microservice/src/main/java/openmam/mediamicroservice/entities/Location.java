@@ -16,6 +16,9 @@ public class Location {
 
     private String path;
 
+    @Column(columnDefinition = "boolean default false")
+    private boolean hidden;
+
     public Type getType() {
         return type;
     }

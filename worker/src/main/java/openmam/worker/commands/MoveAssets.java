@@ -6,11 +6,12 @@ import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.transfer.TransferManager;
 import com.amazonaws.services.s3.transfer.TransferManagerBuilder;
 import openmam.worker.dto.Task;
-import org.buildobjects.process.ProcBuilder;
 import org.springframework.shell.standard.ShellComponent;
 
 import java.io.File;
-import java.nio.file.Paths;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.logging.Logger;
 
 @ShellComponent
@@ -21,9 +22,10 @@ public class MoveAssets {
     {
         var destinationLocation = result.destinationLocation;
         var media = result.media;
+
         switch (result.destinationLocation.type) {
             case S3 -> moveFromLocalToS3(destinationLocation, media);
-            case LOCAL -> moveFromS3ToLocal(destinationLocation, media);
+            case LOCAL -> moveToLocal(destinationLocation, media);
         }
 
     }
@@ -53,8 +55,29 @@ public class MoveAssets {
     }
 
 
-    private static void moveFromS3ToLocal(Task.Location destinationLocation, Task.Media media) {
+    private static void moveToLocal(Task.Location destinationLocation, Task.Media media) {
+        // for now all elements reside on the same location
         var sourceLocation = media.elements.get(0).location;
+
+        switch (sourceLocation.type) {
+            case S3 -> moveFromS3ToLocal(media, sourceLocation, destinationLocation);
+            case LOCAL -> moveFromLocalToLocal(media, sourceLocation, destinationLocation);
+        }
+    }
+
+    private static void moveFromLocalToLocal(Task.Media media, Task.Location sourceLocation, Task.Location destinationLocation) {
+        try {
+            for (var mediaElement : media.elements) {
+
+                Files.move(Path.of(sourceLocation.path, mediaElement.filename),
+                        Path.of(destinationLocation.path, mediaElement.filename));
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static void moveFromS3ToLocal(Task.Media media, Task.Location sourceLocation, Task.Location destinationLocation) {
         System.setProperty("aws.accessKeyId", sourceLocation.s3accessKey);
         System.setProperty("aws.secretKey", sourceLocation.s3accessSecret);
         AmazonS3 s3Client = AmazonS3ClientBuilder.standard()
@@ -73,7 +96,6 @@ public class MoveAssets {
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
-
             // TODO delete from S3
         }
     }

@@ -16,7 +16,7 @@ import java.time.Instant;
 @Service
 public class JwtTokenService {
 
-    private static final Duration JWT_TOKEN_VALIDITY = Duration.ofMinutes(20);
+    private static final Duration JWT_TOKEN_VALIDITY = Duration.ofHours(24);
     private final Logger logger = LoggerFactory.getLogger(JwtTokenService.class);
 
     private final Algorithm hmac512;

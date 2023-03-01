@@ -69,9 +69,10 @@ class MetadataController {
                 media.setDynamicMetadatas(data);
                 mediaRepository.save(media);
             } else if (data.get("targetType").asText().equals(MetadataGroup.Attachment.MEDIA_VERSION.toString())) {
-                var mediaVersion = this.mediaVersionRepository.getReferenceById(data.get("targetId").asLong());
-                mediaVersion.setDynamicMetadatas(data);
-                mediaVersionRepository.save(mediaVersion);
+                this.mediaVersionRepository.findById(data.get("targetId").asLong()).ifPresent(mediaVersion -> {
+                    mediaVersion.setDynamicMetadatas(data);
+                    mediaVersionRepository.save(mediaVersion);
+                });
             }
         });
 
@@ -95,7 +96,6 @@ class MetadataController {
         return metadataGroupRepository.findAll(pageable);
     }
 
-    @Secured("ROLE_ADMIN")
     @GetMapping("/metadataGroup/{groupId}/autocomplete")
     List<MetadataReference> autocomplete(@PathVariable long groupId) {
         var result = metadataReferenceRepository.findAll();

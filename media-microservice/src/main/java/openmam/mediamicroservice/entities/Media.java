@@ -85,6 +85,17 @@ public class Media {
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "media")
     private List<MediaElement> elements;
 
+    public List<PartnerUploadRequest> getPartnerUploadRequests() {
+        return partnerUploadRequests;
+    }
+
+    public void setPartnerUploadRequests(List<PartnerUploadRequest> partnerUploadRequests) {
+        this.partnerUploadRequests = partnerUploadRequests;
+    }
+
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "media")
+    private List<PartnerUploadRequest> partnerUploadRequests;
+
     public List<MediaVersion> getVersions() {
         return versions;
     }
@@ -112,4 +123,8 @@ public class Media {
         this.name = name;
     }
 
+    @Override
+    public String toString() {
+        return getName();
+    }
 }

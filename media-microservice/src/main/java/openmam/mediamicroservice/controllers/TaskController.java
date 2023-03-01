@@ -24,7 +24,7 @@ class TaskController {
 
     @GetMapping("/tasks")
     Page<Task> all(Pageable pageable) {
-        
+
         return taskRepository.findAll(pageable);
     }
 

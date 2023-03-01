@@ -1,6 +1,6 @@
 import { Component, OnInit, Inject, HostListener } from '@angular/core';
 import { Observable, of, map } from 'rxjs';
-import { startWith, switchMap, distinctUntilChanged, debounceTime } from 'rxjs/operators';
+import { startWith, switchMap, distinctUntilChanged, debounceTime, delay } from 'rxjs/operators';
 import { ActivatedRoute, ParamMap } from '@angular/router';
 import { Media, MediaElement, Audio, Location, MediaStream, MediaVersion, Subtitle } from 'src/app/models/media';
 import { MediaService } from 'src/app/services/media.service';
@@ -8,11 +8,19 @@ import { MatDialog, MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dial
 import { MetadataService } from 'src/app/services/metadata.service';
 import { Page } from 'src/app/models/page';
 import { MetadataType, MetadataGroup, MetadataAttachmentType, MetadataReference } from 'src/app/models/metadata';
-import { FormBuilder } from '@angular/forms';
+import { FormBuilder, FormControl } from '@angular/forms';
 import { LocationService } from 'src/app/services/location.service';
+import { User } from 'src/app/models/user';
+import { UserService } from 'src/app/services/user.service';
+import { PartnerUploadService } from 'src/app/services/partner.upload.service';
+import { UploadRequestStatus } from 'src/app/models/upload.request';
+import { Task } from 'src/app/models/task';
 
 declare var Hls:any;
 
+export interface RequestPartnerUploadData {
+  partnerId: number;
+}
 export interface PlayerDialogData {
   url: string;
 }
@@ -49,10 +57,13 @@ export interface IngestDialogData {
   styleUrls: ['./media-detail.component.sass']
 })
 export class MediaDetailComponent implements OnInit {
+  pendingTasks: Task[] = [];
+  
   
   constructor(private route: ActivatedRoute, 
     private mediaService: MediaService,
     private metadataService: MetadataService,
+    private partnerUploadService: PartnerUploadService,
     private locationService: LocationService,
     public dialog: MatDialog,
     private fb: FormBuilder) { }
@@ -64,18 +75,32 @@ export class MediaDetailComponent implements OnInit {
   metadataForm:any;
   selectedVersion:MediaVersion = {};
   loading:boolean = true
+  showUploads: boolean = false
 
   ngOnInit(): void {
     
     this.route.paramMap.subscribe((params: ParamMap) => {
       const id:number = parseInt(params.get('id') ?? '-1')
       this.getMedia(id)
+      this.getPendingTaskForMedia(id)
       this.getMetadataGroups(id)
     });
   }
 
   selectVersion(version:MediaVersion) {
     this.selectedVersion = version
+    this.showUploads = false
+  }
+
+  acceptIngest(requestId:number) {
+    console.log('acceptIngest')
+    this.partnerUploadService.updateUploadRequestStatus(requestId, UploadRequestStatus.INGESTING).subscribe(r => {
+      this.getMedia(this.result?.id!)
+    })
+  }
+
+  displayUploadRequests() {
+    this.showUploads = true
   }
 
   openPlayer(): void {
@@ -145,10 +170,10 @@ export class MediaDetailComponent implements OnInit {
   }  
 
   openUserMetadataDialog(): void {
-    console.log('openIngestDialog');
+    console.log('openUserMetadataDialog');
 
     // populate form
-    console.log(this.metadataForm)
+    console.log('metadataForm', this.metadataForm)
     const filteredOptions = new Map<string, any>()
     if (this.metadataGroups.content) {
       console.log('metadataGroups: ', this.metadataGroups)
@@ -158,6 +183,11 @@ export class MediaDetailComponent implements OnInit {
           let target = metadataGroup.attachmentType === MetadataAttachmentType.MEDIA ? this.result :
             metadataGroup.attachmentType === MetadataAttachmentType.VERSION ? this.selectedVersion : 
             this.selectedVersion
+          console.log('target', target, 'for', metadataGroup.name)
+          if (!target.id) {
+            // skipping version's attached metadata if no version is selected
+            continue
+          }
           if (metadataGroup.metadatas) {
             let subgroup:{[k: string]: any} = {}
             for (const metadataDefinition of metadataGroup.metadatas) {
@@ -179,7 +209,7 @@ export class MediaDetailComponent implements OnInit {
       }
       console.log(group)
       this.metadataForm = this.fb.group(group)
-      console.log(this.metadataForm)
+      console.log('form after', this.metadataForm)
       
       console.log('setting autocomplete listeners')
       for (const key of filteredOptions.keys()) {
@@ -224,6 +254,22 @@ export class MediaDetailComponent implements OnInit {
     });    
   }
 
+  openRequestPartnerUploadDialog(): void {
+    console.log('openRequestPartnerUploadDialog');
+    
+    const dialogRef = this.dialog.open(RequestPartnerUploadDialog, {
+      data: {},
+    });
+
+    dialogRef.afterClosed().subscribe(partner => {
+      console.log('The dialog was closed', partner.value);
+      this.partnerUploadService.createUploadRequest(partner.value.id, this.result.id!)
+        .subscribe(() => {
+          this.getMedia(this.result.id ?? -1)
+        });
+    });
+  }
+
   openIngestDialog(): void {
     console.log('openIngestDialog');
 
@@ -233,8 +279,9 @@ export class MediaDetailComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe(path => {
       console.log('The dialog was closed', path);
+      
       this.mediaService.triggerMediaScan(this.result.id ?? -1, path, 1) // TODO dynamic
-        .subscribe(result => this.getMedia(this.result.id ?? -1));
+        .pipe(delay(200)).subscribe(result => this.getPendingTaskForMedia(this.result.id ?? -1));
     });    
   }
 
@@ -344,6 +391,13 @@ export class MediaDetailComponent implements OnInit {
       })
   }
 
+  getPendingTaskForMedia(id:number): void {
+    this.mediaService.getPendingTaskForMedia(id)
+      .subscribe(result => {
+        this.pendingTasks = result
+      })
+  }
+
   getMetadataGroups(mediaId:Number): void {
     this.metadataService.getMetadataGroups()
       .subscribe(metadataGroups => {
@@ -375,7 +429,6 @@ export class PlayerDialog {
   onNoClick(): void {
     this.dialogRef.close();
   }
-
 
   @HostListener('window:keyup', ['$event'])
   keyEvent(event: KeyboardEvent) {
@@ -459,6 +512,54 @@ export class UserMetadataDialog {
   onNoClick(): void {
     this.dialogRef.close();
   }
+}
+
+@Component({
+  selector: 'dialog-request-partner-upload',
+  templateUrl: './dialog-request-partner-upload.html',
+})
+export class RequestPartnerUploadDialog {
+  partner = new FormControl('');
+  filteredOptions: any = null;
+
+  constructor(
+    public dialogRef: MatDialogRef<RequestPartnerUploadDialog>,
+    public userService: UserService, 
+    @Inject(MAT_DIALOG_DATA) public data: RequestPartnerUploadData,
+  ) {}
+  ngOnInit() {
+    this.filteredOptions = this.partner.valueChanges.pipe(
+      startWith(''),
+      debounceTime(400),
+      distinctUntilChanged(),
+      switchMap(val => {
+        console.log('val', val)
+        // TODO pas en dur
+        const r = this.userService.getAutocompleteData('ROLE_PARTNER', val+'' || '')
+        return r
+      })       
+    );
+  }
+  displayPartnerAutocomplete(value:User) {
+    console.log('displayPartnerAutocomplete', value)
+    return value?.email ?? ''
+  }
+  onNoClick(): void {
+    this.dialogRef.close();
+  }
+
+  filterPartners(val: string): Observable<any[]> {
+    console.log('filter', val)
+
+    return this.userService.getAutocompleteData('ROLE_PARTNER', val)
+     .pipe(
+       map(response => response.filter(option => { 
+        console.log('option', option)
+         return option.email!.toLowerCase().indexOf(val.toLowerCase()) === 0
+       }))
+     )
+  }  
+
 }
 
 @Component({
