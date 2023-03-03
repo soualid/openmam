@@ -1,0 +1,26 @@
+<h1 mat-dialog-title>Upload</h1>
+<mat-dialog-content>
+    <div style="margin-bottom: 30px">
+        We're awaiting a file from you for media
+        <span class="code">Test upload from partner</span>.
+        Please use the upload component below to deliver it.
+    </div>
+    <div style="height: 200px; width: 100%;">
+        <div *ngIf="!uploading">
+            <input type="file" id="file" (change)="uploadFile($event)" class="inputfile">
+            <label for="file">Click here to pick a file to upload</label>
+        </div>
+        <div *ngIf="uploading && !complete" style="position: relative; text-align: center;">
+            <mat-spinner style="display: inline-block; transform: scale(1.8); margin-right: 5px"></mat-spinner> 
+            <span style="font-weight: bold; position: absolute; top: 7px; left: 0; right: 0; text-align: center;">{{progress}}%</span>
+        </div>
+        <div *ngIf="complete" style="text-align: center; position: relative; top: 60px;">
+            <mat-icon style="transform: scale(3); color: rgb(0, 94, 0)">verified</mat-icon>
+            <div style="margin-top: 30px">Upload succeeded, you now can close this dialog safely</div>
+        </div>
+    </div>
+</mat-dialog-content>
+
+<div mat-dialog-actions>
+    <button mat-button (click)="onNoClick()">Close</button>
+</div>

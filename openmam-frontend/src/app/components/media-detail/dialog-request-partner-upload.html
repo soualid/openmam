@@ -1,0 +1,19 @@
+<h1 mat-dialog-title>Request partner upload</h1>
+<mat-dialog-content>
+  <p>Select a filter pattern</p>
+
+  <mat-form-field appearance="fill">
+    <mat-label>Partner</mat-label>
+    <input type="text" placeholder="Start Typing..." matInput [formControl]="partner" [matAutocomplete]="auto">
+    <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayPartnerAutocomplete">
+        <mat-option *ngFor="let option of filteredOptions | async" [value]="option">
+            {{option.email}}
+        </mat-option>
+    </mat-autocomplete>
+</mat-form-field>     
+
+  <div mat-dialog-actions>
+    <button mat-button (click)="onNoClick()">Cancel</button>
+    <button mat-button [mat-dialog-close]="partner" cdkFocusInitial>Ok</button>
+  </div>  
+</mat-dialog-content>
