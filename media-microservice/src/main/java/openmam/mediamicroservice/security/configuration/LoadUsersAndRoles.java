@@ -20,7 +20,7 @@ import java.util.Collection;
 public class LoadUsersAndRoles implements
         ApplicationListener<ContextRefreshedEvent> {
 
-    boolean alreadySetup = true;
+    boolean alreadySetup = false;
 
     @Autowired
     private UserRepository userRepository;
@@ -47,9 +47,9 @@ public class LoadUsersAndRoles implements
         var displayTasksPrivilege = createPrivilegeIfNotFound("DISPLAY_TASKS_PRIVILEGE");
 
         var adminPrivileges = Arrays.asList(readPrivilege, writePrivilege, locationPrivilege, metadataSchemaPrivilege, displayTasksPrivilege);
-        createRoleIfNotFound("ROLE_ADMIN", adminPrivileges);
-        createRoleIfNotFound("ROLE_USER", Arrays.asList(readPrivilege));
-        createRoleIfNotFound("ROLE_PARTNER", Arrays.asList(readPrivilege));
+        createRoleIfNotFound("ROLE_ADMIN", adminPrivileges, 2, "status", "ACCEPTED");
+        createRoleIfNotFound("ROLE_USER", Arrays.asList(readPrivilege), 0, "status", "REFUSED");
+        createRoleIfNotFound("ROLE_PARTNER", Arrays.asList(readPrivilege), 1, "status", "null");
 
         var adminRole = roleRepository.findByName("ROLE_ADMIN");
         var userRole = roleRepository.findByName("ROLE_USER");
@@ -99,13 +99,17 @@ public class LoadUsersAndRoles implements
 
     @Transactional
     Role createRoleIfNotFound(
-      String name, Collection<Privilege> privileges) {
+            String name, Collection<Privilege> privileges,
+            long priority, String dashboardMetadataFilter, String dashboardMetadataFilterValue) {
  
         var role = roleRepository.findByName(name);
         if (role == null) {
             role = new Role();
             role.setName(name);
             role.setPrivileges(privileges);
+            role.setPriority(priority);
+            role.setDashboardMetadataFilter(dashboardMetadataFilter);
+            role.setDashboardMetadataFilterValue(dashboardMetadataFilterValue);
             roleRepository.save(role);
         }
         return role;

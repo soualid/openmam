@@ -31,6 +31,11 @@ export class MenuComponent {
     target: '/home'
   },
   {
+    title: 'My dashboard',
+    icon: 'dashboard',
+    target: '/dashboard'
+  },
+  {
     title: 'Medias',
     icon: 'play_circle',
     target: '/search'

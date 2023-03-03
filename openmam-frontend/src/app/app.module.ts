@@ -36,6 +36,7 @@ import { AuthInterceptor } from './auth/auth.interceptor';
 import { UserService } from './services/user.service';
 import { UsersComponent } from './components/users/users.component';
 import { PartnerUploadComponent, UploadDialog } from './components/partner-upload/partner-upload.component';
+import { DashboardComponent } from './components/dashboard/dashboard.component';
 
 const ngHttpCachingConfig: NgHttpCachingConfig = {
   lifetime: Number.MAX_VALUE,
@@ -73,6 +74,7 @@ const ngHttpCachingConfig: NgHttpCachingConfig = {
     LoginComponent,
     UsersComponent,
     PartnerUploadComponent,
+    DashboardComponent,
   ],
   imports: [
     BrowserModule,
