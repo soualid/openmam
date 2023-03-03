@@ -26,7 +26,7 @@ class LocationController {
 
     @GetMapping("/locations")
     Page<Location> all(Pageable pageable) {
-        return locationRepository.findAll(pageable);
+        return locationRepository.findAllPublicLocations(pageable);
     }
 
 }

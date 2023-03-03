@@ -1,5 +1,7 @@
 package openmam.worker.dto;
 
+import com.fasterxml.jackson.databind.JsonNode;
+
 import javax.print.attribute.standard.Media;
 import java.util.List;
 
@@ -11,6 +13,8 @@ public class Task {
     public Location destinationLocation;
     public TaskType type;
 
+    public JsonNode additionalJobInputs;
+
     public enum MediaStreamType {
         AUDIO, VIDEO, SUBTITLE
     }
@@ -20,16 +24,24 @@ public class Task {
     public enum TaskType {
         SCAN,
         GENERATE_VARIANTS,
+        INGEST_PARTNER_UPLOAD,
         MOVE_ASSET
+    }
+    public enum MediaStreamStatus {
+        LOCKED
     }
 
     public static class MediaStream {
 
         public long id;
         public int streamIndex;
-
+        public MediaStreamStatus status;
         public MediaStreamType type;
 
+        public String codecLongName;
+        public String codecName;
+        public String codecTagString;
+        public String codecType;
     }
 
     public static class MediaElement {
@@ -38,6 +50,7 @@ public class Task {
         public String filename;
         public Location location;
 
+        public JsonNode fullMetadatas;
     }
 
     public static class Media {
@@ -45,6 +58,8 @@ public class Task {
         public long id;
         public List<MediaElement> elements;
 
+        public long streamCount;
+        public Long videoStreamId;
     }
 
     public static class Location {

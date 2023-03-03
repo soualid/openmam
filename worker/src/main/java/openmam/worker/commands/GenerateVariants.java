@@ -124,12 +124,13 @@ public class GenerateVariants {
                 sourcePath.toAbsolutePath().toFile().toString(),
                 "-frames:v", "1",
                 "-f", "image2",
+                "-update", "1",
                 "-y",
                 thumbnailPath.toAbsolutePath().toString())
-                .withNoTimeout()
                 .withWorkingDirectory(destinationPath.toFile());
         log.info("output: " + process.getCommandLine());
         var output = process.run();
+        log.info("ok");
 
         output = new ProcBuilder("ffmpeg", "-i",
                 sourcePath.toAbsolutePath().toFile().toString(),

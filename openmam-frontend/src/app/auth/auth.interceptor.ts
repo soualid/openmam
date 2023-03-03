@@ -19,8 +19,10 @@ export class AuthInterceptor implements HttpInterceptor {
 
   intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     const currentUser = this.userService.currentUser
+    console.log('request', request)
     
-    if (currentUser && currentUser.accessToken) {
+    if (currentUser && currentUser.accessToken 
+        && request.url.indexOf("amazonaws.com") === -1) {
       request = request.clone({
         setHeaders: {
           'Content-Type': 'application/json',
@@ -33,10 +35,11 @@ export class AuthInterceptor implements HttpInterceptor {
       (err: any) => {
       if (err instanceof HttpErrorResponse) {
         if (err.status !== 401 && err.status !== 403) {
-          this.userService.currentUser = undefined
-          this.userService.userChanged(undefined)
           return;
         }
+
+        this.userService.currentUser = undefined
+        this.userService.userChanged(undefined)
         this.router.navigate(['login']);
       }
     }));

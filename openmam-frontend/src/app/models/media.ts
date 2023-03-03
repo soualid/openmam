@@ -1,3 +1,5 @@
+import { UploadRequest } from "./upload.request";
+
 export interface ScanResult {
     message: string;
 }
@@ -15,6 +17,7 @@ export interface Media {
     dynamicMetadatas?: any;
     variantsLocation?: Location;
     versions?: MediaVersion[];
+    partnerUploadRequests?: UploadRequest[];
 }
 export interface MediaVersion {
     id?: number;

@@ -19,12 +19,13 @@ import { MatInputModule } from '@angular/material/input';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { CreateDialog, SearchComponent } from './components/search/search.component';
 import { HomeComponent } from './components/home/home.component';
 import { HttpClientModule, HttpRequest, HTTP_INTERCEPTORS } from '@angular/common/http';
-import { IngestDialog, CreateVersionDialog, MediaDetailComponent, MetadataDialog, MoveMediaDialog, PlayerDialog, UserMetadataDialog } from './components/media-detail/media-detail.component';
+import { IngestDialog, CreateVersionDialog, MediaDetailComponent, MetadataDialog, MoveMediaDialog, PlayerDialog, UserMetadataDialog, RequestPartnerUploadDialog } from './components/media-detail/media-detail.component';
 import { LocationsComponent } from './components/locations/locations.component';
 import { NgHttpCachingConfig, NgHttpCachingModule, NgHttpCachingStrategy } from 'ng-http-caching';
 import { TasksComponent } from './components/tasks/tasks.component';
@@ -34,6 +35,7 @@ import { LoginComponent } from './components/login/login.component';
 import { AuthInterceptor } from './auth/auth.interceptor';
 import { UserService } from './services/user.service';
 import { UsersComponent } from './components/users/users.component';
+import { PartnerUploadComponent, UploadDialog } from './components/partner-upload/partner-upload.component';
 
 const ngHttpCachingConfig: NgHttpCachingConfig = {
   lifetime: Number.MAX_VALUE,
@@ -55,6 +57,7 @@ const ngHttpCachingConfig: NgHttpCachingConfig = {
     HomeComponent,
     MediaDetailComponent,
     MetadataDialog, 
+    RequestPartnerUploadDialog,
     PlayerDialog,
     IngestDialog,
     CreateDialog,
@@ -63,16 +66,19 @@ const ngHttpCachingConfig: NgHttpCachingConfig = {
     LocationsComponent,
     MoveMediaDialog, 
     CreateVersionDialog, 
+    UploadDialog,
     TasksComponent,
     MetadataSchemaComponent,
     MetadataSchemaDetailComponent,
     LoginComponent,
     UsersComponent,
+    PartnerUploadComponent,
   ],
   imports: [
     BrowserModule,
     AppRoutingModule,
     MatListModule,
+    MatProgressBarModule,
     MatIconModule,
     MatCardModule,
     MatSlideToggleModule,

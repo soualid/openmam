@@ -1,7 +1,12 @@
-
 <div *ngIf="!loading; else firstLoad">
     <div class="top-container">
-        <h1>{{ result.name }}</h1>
+        <h1>
+            {{ result.name }}
+        </h1>
+
+        <span *ngIf="pendingTasks.length" class="pending">
+            <mat-spinner></mat-spinner> {{pendingTasks.length}} pending <a routerLink="tasks">tasks</a>...
+        </span>        
         <button mat-button [matMenuTriggerFor]="menu">
             <mat-icon>settings</mat-icon>
         </button>
@@ -9,6 +14,7 @@
             <button mat-menu-item (click)="openIngestDialog()">Ingest new files</button>
             <button mat-menu-item (click)="openUserMetadataDialog()">Edit metadatas</button>
             <button mat-menu-item (click)="openCreateVersionDialog()">Create version</button>
+            <button mat-menu-item (click)="openRequestPartnerUploadDialog()">Request partner upload</button>
             <button mat-menu-item (click)="openMoveMediaDialog()">Move to...</button>
         </mat-menu>
         
@@ -24,15 +30,20 @@
                     <p>Use the button below to create a new version.</p>
                     <button mat-raised-button (click)="openCreateVersionDialog()">Create version</button>
                 </div>
-                <button (click)="selectVersion(version)" mat-flat-button [color]="version.id == selectedVersion.id ? 'primary' : ''" *ngFor="let version of result.versions" style="margin-right: 10px;">
+                <button (click)="selectVersion(version)" mat-flat-button [color]="!showUploads && version.id == selectedVersion.id ? 'primary' : ''" *ngFor="let version of result.versions" style="margin-right: 10px;">
                     {{version.name}}
                 </button>
-                <button (click)="selectVersion({})" mat-flat-button [color]="selectedVersion.id == null ? 'primary' : ''" style="margin-right: 10px;" *ngIf="result?.versions?.length">
+                <button (click)="selectVersion({})" mat-flat-button [color]="!showUploads && selectedVersion.id == null ? 'primary' : ''" style="margin-right: 10px;" *ngIf="result?.versions?.length">
                     All streams
                 </button>
+                <ng-container *ngIf="result.partnerUploadRequests?.length">
+                    <button (click)="displayUploadRequests()" mat-flat-button [color]="showUploads ? 'primary' : ''" style="margin-right: 10px;" *ngIf="result?.versions?.length">
+                        Upload requests ({{result.partnerUploadRequests?.length}})
+                    </button>
+                </ng-container>
             </div>
 
-            <table class="metadata-form" *ngIf="metadataGroups && result.name && result.dynamicMetadatas">
+            <table class="metadata-form" *ngIf="!showUploads && metadataGroups && result.name && result.dynamicMetadatas">
                 <tr class="heading">
                     <td colspan="2">Media related user defined metadatas</td>
                 </tr>
@@ -87,12 +98,24 @@
                 </ng-container>  
             </table>          
 
+            <div *ngIf="showUploads && result.partnerUploadRequests?.length">
+                <h2>
+                    Partner upload requests
+                </h2>
+                <ul>
+                    <li *ngFor="let uploadRequest of result.partnerUploadRequests">
+                        From <span class="code">{{uploadRequest.partner.value}}</span> with status <span class="code">{{uploadRequest.status}}</span>&nbsp;
+                        <button *ngIf="uploadRequest.status == 'UPLOADED'" mat-raised-button (click)="acceptIngest(uploadRequest.id)">Accept ingest</button>
+                    </li>
+                </ul>
+            </div>
+
             <div *ngIf="result?.dynamicMetadatas === null" style="margin-bottom: 20px;">
                 <p>Use the button below to set the user defined metadatas to this media and/or version.</p>
                 <button mat-raised-button (click)="openUserMetadataDialog()">Set metadatas</button>
             </div>
 
-            <div *ngIf="selectedVersion.id != null">
+            <div *ngIf="selectedVersion.id != null && showUploads">
                 <h2>
                     Primary Video
                 </h2>
@@ -117,6 +140,7 @@
                     Status: {{selectedVersion.audio?.status}}
                 </div>
             </div>
+
             <div *ngIf="selectedVersion.id != null && selectedVersion.subtitles?.length">
                 <h2>
                     Subtitles
@@ -131,7 +155,9 @@
                     </li>
                 </ul>
             </div>
-            <div *ngIf="selectedVersion.id == null">
+            
+            <div *ngIf="!showUploads && selectedVersion.id == null">
+                
                 <h2>
                     Ingested files and streams
                 </h2>
