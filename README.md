@@ -25,6 +25,8 @@ Open MAM aims to provide an open and powerful ecosystem for your media assets, i
 Next things to be implemented:
 
 - Better UI for users management (most of the features are only available through the API for now)
+- Telestream Vantage workflow integration (for outgest and partner upload post-processing)
+- Aspera server integration (for partner upload processing)
 - UI for metadata management (only available through the API for now)
 - Metadata schema security based on users, roles or privileges (read, write)
 - Workflow management
