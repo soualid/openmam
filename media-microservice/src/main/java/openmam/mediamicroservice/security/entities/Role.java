@@ -11,6 +11,35 @@ public class Role {
     @GeneratedValue Long id;
 
     private String name;
+    private String dashboardMetadataFilter;
+
+    public String getDashboardMetadataFilter() {
+        return dashboardMetadataFilter;
+    }
+
+    public void setDashboardMetadataFilter(String dashboardMetadataFilter) {
+        this.dashboardMetadataFilter = dashboardMetadataFilter;
+    }
+
+    public String getDashboardMetadataFilterValue() {
+        return dashboardMetadataFilterValue;
+    }
+
+    public void setDashboardMetadataFilterValue(String dashboardMetadataFilterValue) {
+        this.dashboardMetadataFilterValue = dashboardMetadataFilterValue;
+    }
+
+    private String dashboardMetadataFilterValue;
+
+    public Long getPriority() {
+        return priority;
+    }
+
+    public void setPriority(Long priority) {
+        this.priority = priority;
+    }
+
+    private Long priority = 0L;
     @ManyToMany(mappedBy = "roles")
     private Collection<User> users;
 

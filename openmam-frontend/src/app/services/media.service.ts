@@ -10,9 +10,10 @@ import { Task } from '../models/task';
 
 @Injectable({ providedIn: 'root' })
 export class MediaService {
-
-  private mediasUrl = 'api/medias';  // URL to web api
-  private mediaUrl = 'api/media';  // URL to web api
+  
+  private mediasUrl = 'api/medias';
+  private dashboardUrl = 'api/dashboard';
+  private mediaUrl = 'api/media';
 
   httpOptions = {
     headers: new HttpHeaders({ 'Content-Type': 'application/json' })
@@ -26,6 +27,14 @@ export class MediaService {
       .pipe(
         tap(_ => this.log('fetched medias')),
         catchError(this.handleError<Page<Media>>('getMedias', {}))
+      );
+  }
+
+  getDashboard(): Observable<Page<Media>> {
+    return this.http.get<Page<Media>>(this.dashboardUrl)
+      .pipe(
+        tap(_ => this.log('fetched getDashboard')),
+        catchError(this.handleError<Page<Media>>('getDashboard', {}))
       );
   }
 
