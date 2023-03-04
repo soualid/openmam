@@ -15,6 +15,8 @@ import { UserService } from 'src/app/services/user.service';
 import { PartnerUploadService } from 'src/app/services/partner.upload.service';
 import { UploadRequestStatus } from 'src/app/models/upload.request';
 import { Task } from 'src/app/models/task';
+import { OutgestService } from 'src/app/services/outgest.service';
+import { OutgestProfile } from 'src/app/models/outgest.profile';
 
 declare var Hls:any;
 
@@ -38,6 +40,16 @@ export interface CreateVersionDialogData {
 export interface MoveMediaDialogData {
   locationId: string;
   locations?: Location[];
+}
+export interface OutgestDialogData {
+  locations: Location[];
+  destinationLocation: Location;
+  selectedOutgestProfile: OutgestProfile;
+  outgestProfiles?: OutgestProfile[];
+  availableVideoStreams: MediaStream[];
+  selectedVideoStreams: MediaStream[];
+  availableAudioStreams: MediaStream[];
+  selectedAudioStreams: MediaStream[];
 }
 export interface UserMetadataDialogData {
   metadataGroups: Page<MetadataGroup>;
@@ -65,6 +77,7 @@ export class MediaDetailComponent implements OnInit {
     private metadataService: MetadataService,
     private partnerUploadService: PartnerUploadService,
     private locationService: LocationService,
+    private outgestService: OutgestService,
     public dialog: MatDialog,
     private fb: FormBuilder) { }
   
@@ -310,6 +323,45 @@ export class MediaDetailComponent implements OnInit {
     });    
   }
 
+
+  openOutgestDialog(): void {
+    console.log('openOutgestDialog');
+    let locationId = null;
+    let availableStreams:any[] = this.result.elements?.flatMap(e => e.streams?.map(s => {
+      s.fromFilename = e.filename
+      return s
+    })) as any[]
+    const dialogRef = this.dialog.open(OutgestDialog, {
+      data: {
+        locationId,
+        availableVideoStreams: availableStreams.filter(s => s.type === 'VIDEO'),
+        availableAudioStreams: availableStreams.filter(s => s.type === 'AUDIO')
+      },
+    });
+    dialogRef.afterOpened().subscribe(() => {
+      this.locationService.getLocations().subscribe(locations => {
+        dialogRef.componentInstance.data.locations = locations.content!
+      })      
+      this.outgestService.getOutgestProfiles().subscribe(profiles => {
+        dialogRef.componentInstance.data.outgestProfiles = profiles.content
+      })
+    })
+    dialogRef.afterClosed().subscribe(data => {
+      console.log('The dialog was closed', data);
+      if (!data) return
+      const selectedVideoStreams = (data.selectedVideoStreams as MediaStream[]).map(s => s.id)
+      const selectedAudioStreams = (data.selectedAudioStreams as MediaStream[]).map(s => s.id)
+      this.outgestService.triggerOutgestTask(data.selectedOutgestProfile.id, 
+        this.result.id!, 
+        data.destinationLocation.id, 
+        selectedVideoStreams, 
+        selectedAudioStreams).pipe(delay(200)).subscribe(result => {
+          console.log(result)
+          this.getPendingTaskForMedia(this.result.id ?? -1)
+        });
+    });    
+  }  
+
   openCreateVersionDialog(): void {
     console.log('openCreateVersionDialog');
     const availableAudios:any[] = []
@@ -488,6 +540,23 @@ export class MoveMediaDialog {
   constructor(
     public dialogRef: MatDialogRef<MoveMediaDialog>,
     @Inject(MAT_DIALOG_DATA) public data: MoveMediaDialogData,
+  ) {}
+
+  onNoClick(): void {
+    this.dialogRef.close();
+  }
+}
+
+
+@Component({
+  selector: 'dialog-outgest',
+  templateUrl: './dialog-outgest.html',
+  styleUrls: [ './dialog-outgest.sass' ]
+})
+export class OutgestDialog {
+  constructor(
+    public dialogRef: MatDialogRef<OutgestDialog>,
+    @Inject(MAT_DIALOG_DATA) public data: OutgestDialogData,
   ) {}
 
   onNoClick(): void {

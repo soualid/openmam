@@ -1,0 +1,54 @@
+<h1 mat-dialog-title>Outgest</h1>
+<mat-dialog-content style="min-width: 600px;">
+  <p>Select output location</p>
+  <mat-form-field appearance="fill">
+    <mat-label>Destination location</mat-label>
+    <mat-select [(ngModel)]="data.destinationLocation">
+      <mat-option *ngFor="let location of data.locations" [value]="location">
+          {{location.name}}
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <p>Select an outgest profile</p>
+  <mat-form-field appearance="fill">
+    <mat-label>Outgest profile</mat-label>
+    <mat-select [(ngModel)]="data.selectedOutgestProfile">
+      <mat-option *ngFor="let profile of data.outgestProfiles" [value]="profile">
+          {{profile.name}}
+      </mat-option>
+    </mat-select>
+  </mat-form-field>  
+  
+  <br/>
+  <ng-container *ngIf="data.selectedOutgestProfile?.numberOfVideoStreams">
+    <p>Please pick {{data.selectedOutgestProfile.numberOfVideoStreams}} video stream(s)</p>
+    <mat-form-field appearance="fill">
+      <mat-label>Video streams</mat-label>
+      <mat-select [(ngModel)]="data.selectedVideoStreams" multiple>
+        <mat-option *ngFor="let stream of data.availableVideoStreams" [value]="stream">
+          Stream #{{stream.streamIndex}} from {{stream.fromFilename}}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+  </ng-container>
+  
+  <br/>
+  <ng-container *ngIf="data.selectedOutgestProfile?.numberOfAudioStreams">
+    <p>Please pick {{data.selectedOutgestProfile.numberOfAudioStreams}} audio stream(s)</p>
+    <mat-form-field appearance="fill">
+      <mat-label>Video streams</mat-label>
+      <mat-select [(ngModel)]="data.selectedAudioStreams" multiple>
+        <mat-option *ngFor="let stream of data.availableAudioStreams" [value]="stream">
+          Stream #{{stream.streamIndex}} from {{stream.fromFilename}}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+  </ng-container>
+
+
+  <div mat-dialog-actions>
+    <button mat-button (click)="onNoClick()">Cancel</button>
+    <button mat-button [mat-dialog-close]="data" cdkFocusInitial>Ok</button>
+  </div>  
+</mat-dialog-content>

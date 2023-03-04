@@ -34,8 +34,10 @@ export interface MediaElement {
     streams?: MediaStream[];
 }
 export interface MediaStream {
+    id: number;
     status?: string;
     type?: string;
+    fromFilename?: string;
     streamIndex?: number;
     codecName?: string;
     codecType?: string;

@@ -70,6 +70,7 @@ public class PollForTasks {
                     case MOVE_ASSET -> MoveAssets.handleTask(result);
                     case SCAN -> IngestAssets.handleTask(result, applicationConfiguration);
                     case INGEST_PARTNER_UPLOAD -> IngestFromPartnerUpload.handleTask(result, applicationConfiguration);
+                    case FFMPEG_OUTGEST -> FFMpegOutgest.handleTask(result);
                 }
 
                 url = applicationConfiguration.mediaServiceHost + "/scheduling/endJob/" + result.id;

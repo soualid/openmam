@@ -2,6 +2,7 @@ package openmam.mediamicroservice.services;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import openmam.mediamicroservice.dto.FFMpegOutgestJobsInput;
 import openmam.mediamicroservice.dto.IngestFromPartnerJobsInput;
 import openmam.mediamicroservice.entities.*;
 import openmam.mediamicroservice.repositories.*;
@@ -20,6 +21,7 @@ import java.util.List;
 
 import static openmam.mediamicroservice.entities.Configuration.Key.PARTNER_UPLOAD_INGEST_LOCATION;
 import static openmam.mediamicroservice.entities.Configuration.Key.PARTNER_UPLOAD_LOCATION;
+import static openmam.mediamicroservice.entities.Task.Status.PENDING;
 import static openmam.mediamicroservice.entities.Task.Status.SUCCEEDED;
 import static org.aspectj.weaver.tools.cache.SimpleCacheFactory.path;
 
@@ -106,6 +108,56 @@ public class SchedulingService {
         additionalJobsInput.scanPath = path;
         task.setAdditionalJobInputs(objectMapper.convertValue(additionalJobsInput, JsonNode.class));
         return taskRepository.save(task);
+    }
+
+    @Transactional
+    public Task createFFMpegOutgestTask(OutgestProfile outgestProfile,
+                                        Media media,
+                                        List<MediaStream> videoStreams,
+                                        List<MediaStream> audioStreams,
+                                        List<MediaStream> subtitleStreams,
+                                        Location destinationLocation,
+                                        String createdBy) {
+        var task = new Task();
+        task.setType(Task.Type.FFMPEG_OUTGEST);
+        task.setStatus(PENDING);
+        task.setCreatedBy(createdBy);
+        task.setCreationDate(new Date());
+        task.setDestinationLocation(destinationLocation);
+        task.setMedia(media);
+
+        var additionalInputs = new FFMpegOutgestJobsInput();
+        for (var video: videoStreams) {
+            video.getMediaElement().setStreams(null);
+            additionalInputs.videoStreams.add(new FFMpegOutgestJobsInput.FFMpegOutgestJobsInputStream() {
+                {
+                    stream = video;
+                    element = video.getMediaElement();
+                }
+            });
+        }
+        for (var audio: audioStreams) {
+            audio.getMediaElement().setStreams(null);
+            additionalInputs.audioStreams.add(new FFMpegOutgestJobsInput.FFMpegOutgestJobsInputStream() {
+                {
+                    stream = audio;
+                    element = audio.getMediaElement();
+                }
+            });
+        }
+        for (var subtitle: subtitleStreams) {
+            subtitle.getMediaElement().setStreams(null);
+            additionalInputs.subtitleStreams.add(new FFMpegOutgestJobsInput.FFMpegOutgestJobsInputStream() {
+                {
+                    stream = subtitle;
+                    element = subtitle.getMediaElement();
+                }
+            });
+        }
+        additionalInputs.outgestProfile = outgestProfile;
+        task.setAdditionalJobInputs(new ObjectMapper().convertValue(additionalInputs, JsonNode.class));
+        task = taskRepository.save(task);
+        return task;
     }
 
     @Transactional
