@@ -96,7 +96,6 @@ class MediaController {
   }
 
   private static class ScanParameters {
-
     public long locationId;
     public String path;
   }

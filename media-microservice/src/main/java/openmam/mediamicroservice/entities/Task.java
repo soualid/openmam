@@ -24,7 +24,7 @@ public class Task {
         GENERATE_VARIANTS,
         CALL_VANTAGE_WORKFLOW,
         INGEST_PARTNER_UPLOAD,
-        MOVE_ASSET
+        FFMPEG_OUTGEST, MOVE_ASSET
     }
 
     public enum Status {

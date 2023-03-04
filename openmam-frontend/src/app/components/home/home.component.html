@@ -5,21 +5,28 @@
 </p>
 <ul>
     <li>Ingestion of all major broadcast formats</li>
-    <li>Multiple input files or essence per assets</li>
-    <li>Multiple essences containers indexation</li>
+    <li>Can handle multiple input files per media, and properly indexes multiple stream per input file</li>
+    <li>Asynchronous generation of multi video/audio and subtitles HLS stream for low-res playback, that are compatible with mobile playback</li>
     <li>Locally attached, network, and cloud based (S3) locations support</li>
     <li>Move assets and variants between locations</li>
+    <li>Partner upload slot management (open an upload request, let a partner fullfil it through a cloud upload, then ingest the resulting file)</li>
+    <li>Secured API and UI using JWT and Spring Security managed users, roles and privileges management</li>
+    <li>Custom user-defined metadatas schema management, attached to either media or version</li>
     <li>Dynamic metadata schema management, associated to either media or media versions, including reference support</li>
     <li>Asynchronous generation of multi video/audio and subtitles HLS stream for low-res playback, compatible with mobile playback</li>
+    <li>Subtitle ingestion, conversion and playback support (EBU STL, TTML)</li>
 </ul>
 <p>
     Next steps of our roadmap:
 </p>
 <ul>
-    <li>Globally improved UI</li>
+    <li>Better UI for users management (most of the features are only available through the API for now)</li>
+    <li>UI for metadata management (only available through the API for now)</li>
     <li>Setup instructions</li>
-    <li>Subtitle ingestion and playback support (EBU STL, TTML)</li>
+    <li>Metadata schema security based on users, roles or privileges (read, write)</li>
+    <li>Workflow management</li>
     <li>Documentation</li>
+    <li>Error checks</li>
 </ul>
 <p>
     Please lead to the documentation to get started!

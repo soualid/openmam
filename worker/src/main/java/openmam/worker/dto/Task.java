@@ -1,5 +1,6 @@
 package openmam.worker.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import javax.print.attribute.standard.Media;
@@ -25,12 +26,14 @@ public class Task {
         SCAN,
         GENERATE_VARIANTS,
         INGEST_PARTNER_UPLOAD,
-        MOVE_ASSET
+        MOVE_ASSET,
+        FFMPEG_OUTGEST
     }
     public enum MediaStreamStatus {
         LOCKED
     }
 
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class MediaStream {
 
         public long id;
@@ -44,6 +47,7 @@ public class Task {
         public String codecType;
     }
 
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class MediaElement {
 
         public long id;
@@ -62,6 +66,7 @@ public class Task {
         public Long videoStreamId;
     }
 
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Location {
 
         public long id;

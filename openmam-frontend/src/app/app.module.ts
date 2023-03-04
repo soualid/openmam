@@ -25,7 +25,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { CreateDialog, SearchComponent } from './components/search/search.component';
 import { HomeComponent } from './components/home/home.component';
 import { HttpClientModule, HttpRequest, HTTP_INTERCEPTORS } from '@angular/common/http';
-import { IngestDialog, CreateVersionDialog, MediaDetailComponent, MetadataDialog, MoveMediaDialog, PlayerDialog, UserMetadataDialog, RequestPartnerUploadDialog } from './components/media-detail/media-detail.component';
+import { IngestDialog, CreateVersionDialog, MediaDetailComponent, MetadataDialog, MoveMediaDialog, PlayerDialog, UserMetadataDialog, RequestPartnerUploadDialog, OutgestDialog } from './components/media-detail/media-detail.component';
 import { LocationsComponent } from './components/locations/locations.component';
 import { NgHttpCachingConfig, NgHttpCachingModule, NgHttpCachingStrategy } from 'ng-http-caching';
 import { TasksComponent } from './components/tasks/tasks.component';
@@ -59,6 +59,7 @@ const ngHttpCachingConfig: NgHttpCachingConfig = {
     MediaDetailComponent,
     MetadataDialog, 
     RequestPartnerUploadDialog,
+    OutgestDialog,
     PlayerDialog,
     IngestDialog,
     CreateDialog,

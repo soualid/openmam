@@ -5,7 +5,7 @@
         </h1>
 
         <span *ngIf="pendingTasks.length" class="pending">
-            <mat-spinner></mat-spinner> {{pendingTasks.length}} pending <a routerLink="tasks">tasks</a>...
+            <mat-spinner></mat-spinner> {{pendingTasks.length}} pending <a routerLink="/tasks">tasks</a>...
         </span>        
         <button mat-button [matMenuTriggerFor]="menu">
             <mat-icon>settings</mat-icon>
@@ -15,7 +15,8 @@
             <button mat-menu-item (click)="openUserMetadataDialog()">Edit metadatas</button>
             <button mat-menu-item (click)="openCreateVersionDialog()">Create version</button>
             <button mat-menu-item (click)="openRequestPartnerUploadDialog()">Request partner upload</button>
-            <button mat-menu-item (click)="openMoveMediaDialog()">Move to...</button>
+            <button mat-menu-item (click)="openMoveMediaDialog()">Move</button>
+            <button mat-menu-item (click)="openOutgestDialog()">Outgest</button>
         </mat-menu>
         
     </div>

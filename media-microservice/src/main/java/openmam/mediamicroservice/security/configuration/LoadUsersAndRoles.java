@@ -20,7 +20,7 @@ import java.util.Collection;
 public class LoadUsersAndRoles implements
         ApplicationListener<ContextRefreshedEvent> {
 
-    boolean alreadySetup = false;
+    boolean alreadySetup = true;
 
     @Autowired
     private UserRepository userRepository;
