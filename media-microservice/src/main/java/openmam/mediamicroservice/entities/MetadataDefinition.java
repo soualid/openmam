@@ -27,6 +27,21 @@ public class MetadataDefinition {
     @Enumerated(EnumType.STRING)
     private Type type;
 
+    @org.hibernate.annotations.Type(StringArrayType.class)
+    @Column(
+            name = "editing_restricted_to_roles",
+            columnDefinition = "text[]"
+    )
+    private String[] editingRestrictedToRoles;
+
+    public String[] getEditingRestrictedToRoles() {
+        return editingRestrictedToRoles;
+    }
+
+    public void setEditingRestrictedToRoles(String[] editingRestrictedToRoles) {
+        this.editingRestrictedToRoles = editingRestrictedToRoles;
+    }
+
     private long orderNumber;
 
     public boolean isSearchable() {

@@ -1,5 +1,6 @@
 package openmam.mediamicroservice.security.entities;
 
+import io.hypersistence.utils.hibernate.type.array.StringArrayType;
 import jakarta.persistence.*;
 
 import java.util.Collection;
@@ -40,6 +41,7 @@ public class Role {
     }
 
     private Long priority = 0L;
+
     @ManyToMany(mappedBy = "roles")
     private Collection<User> users;
 

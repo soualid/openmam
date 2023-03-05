@@ -5,11 +5,10 @@
     </p>
     <ul class="metadata-form" *ngIf="data.metadataForm">
         <form [formGroup]="data.metadataForm">
-            <div *ngFor="let metadataGroup of data.metadataGroups.content" [formGroupName]="metadataGroup.id">
-                <ng-container *ngIf="metadataGroup.attachmentType !== data.metadataAttachmentTypes.REFERENCEABLE">
-                    
-                    <li *ngFor="let metadataDefinition of metadataGroup.metadatas">
-                        <ng-container *ngIf="data.metadataForm.get(''+metadataGroup.id) != null">
+            <ng-container *ngFor="let metadataGroup of data.metadataGroups.content">
+                <ng-container *ngIf="metadataGroup.attachmentType != data.metadataAttachmentTypes.REFERENCEABLE && data.metadataForm.get(''+metadataGroup.id) != null">
+                    <div [formGroupName]="metadataGroup.id">
+                        <li *ngFor="let metadataDefinition of metadataGroup.metadatas">
                             <ng-container [ngSwitch]="metadataDefinition.type">
                                 <mat-form-field appearance="fill" *ngSwitchCase="data.metadataTypes.TEXT">
                                     <mat-label>{{metadataDefinition.label}}</mat-label>
@@ -47,10 +46,10 @@
                                     Hu oh, unknown type!
                                 </div>
                             </ng-container> 
-                        </ng-container>  
-                    </li>
+                        </li>
+                    </div>                                        
                 </ng-container>
-            </div>
+            </ng-container>
             <button mat-button (click)="onNoClick()">No Thanks</button>
             <button mat-button [mat-dialog-close]="data.metadataForm" cdkFocusInitial>Ok</button>
         </form>

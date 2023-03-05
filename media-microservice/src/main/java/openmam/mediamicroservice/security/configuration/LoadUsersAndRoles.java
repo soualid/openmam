@@ -51,9 +51,9 @@ public class LoadUsersAndRoles implements
         var displayTasksPrivilege = createPrivilegeIfNotFound("DISPLAY_TASKS_PRIVILEGE");
 
         var adminPrivileges = Arrays.asList(readPrivilege, writePrivilege, locationPrivilege, metadataSchemaPrivilege, displayTasksPrivilege);
-        createRoleIfNotFound("ROLE_ADMIN", adminPrivileges, 2, "status", "ACCEPTED");
-        createRoleIfNotFound("ROLE_USER", Arrays.asList(readPrivilege), 1, "status", "REFUSED");
-        createRoleIfNotFound("ROLE_PARTNER", Arrays.asList(readPrivilege), 3, "status", "null");
+        createRoleIfNotFound("ROLE_ADMIN", adminPrivileges, 300, "status", "ACCEPTED");
+        createRoleIfNotFound("ROLE_USER", Arrays.asList(readPrivilege), 200, "status", "REFUSED");
+        createRoleIfNotFound("ROLE_PARTNER", Arrays.asList(readPrivilege), 100, "status", "null");
 
         var adminRole = roleRepository.findByName("ROLE_ADMIN");
         var userRole = roleRepository.findByName("ROLE_USER");

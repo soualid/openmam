@@ -10,6 +10,7 @@ import org.springframework.security.access.AccessDecisionVoter;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.security.access.vote.RoleHierarchyVoter;
+import org.springframework.security.authorization.AuthorityAuthorizationManager;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
@@ -18,6 +19,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.intercept.RequestAuthorizationContext;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
@@ -36,21 +38,30 @@ public class JwtSecurityConfig {
     }
 
     @Bean
+    public RoleHierarchy roleHierarchy() {
+        RoleHierarchyImpl r = new RoleHierarchyImpl();
+        r.setHierarchy("ROLE_ADMIN > ROLE_USER > ROLE_PARTNER");
+        return r;
+    }
+
+    @Bean
     AccessDecisionVoter hierarchyVoter() {
-        var hierarchy = new RoleHierarchyImpl();
-        hierarchy.setHierarchy("ROLE_ADMIN > ROLE_USER > ROLE_PARTNER");
-        return new RoleHierarchyVoter(hierarchy);
+        return new RoleHierarchyVoter(roleHierarchy());
     }
 
     @Bean
     public SecurityFilterChain configure(final HttpSecurity http) throws Exception {
+
+        var auth = AuthorityAuthorizationManager.<RequestAuthorizationContext>hasAnyRole("PARTNER", "USER", "ADMIN");
+        auth.setRoleHierarchy(roleHierarchy());
+
         return http.cors().and()
                 .csrf().disable()
                 .authorizeHttpRequests()
                         .requestMatchers("/", "/authenticate").permitAll()
                         .requestMatchers("/static/**").permitAll()
                         .requestMatchers("/my/uploadRequests").hasRole("PARTNER")
-                        .anyRequest().hasRole("USER").and()
+                        .anyRequest().access(auth).and()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
                 .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();

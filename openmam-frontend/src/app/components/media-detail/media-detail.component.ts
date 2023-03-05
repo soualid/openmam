@@ -52,6 +52,7 @@ export interface OutgestDialogData {
   selectedAudioStreams: MediaStream[];
 }
 export interface UserMetadataDialogData {
+  showVersionRelatedForm: boolean;
   metadataGroups: Page<MetadataGroup>;
   media: Media;
   metadataForm: any;
@@ -70,16 +71,23 @@ export interface IngestDialogData {
 })
 export class MediaDetailComponent implements OnInit {
   pendingTasks: Task[] = [];
+  currentUser: User | undefined;
   
   
   constructor(private route: ActivatedRoute, 
     private mediaService: MediaService,
+    private userService: UserService, 
     private metadataService: MetadataService,
     private partnerUploadService: PartnerUploadService,
     private locationService: LocationService,
     private outgestService: OutgestService,
     public dialog: MatDialog,
-    private fb: FormBuilder) { }
+    private fb: FormBuilder) { 
+      this.currentUser = userService.currentUser
+      userService.execChange.subscribe((value) => {
+        this.currentUser = value
+      })      
+    }
   
   result: Media = {}
   metadataGroups:Page<MetadataGroup> = {};
@@ -180,7 +188,13 @@ export class MediaDetailComponent implements OnInit {
          return option.representation?.toLowerCase().indexOf(val.toLowerCase()) === 0
        }))
      )
-  }  
+  }
+
+  isRightGranted(a:string[]|undefined, b:string[]|undefined):boolean {
+    if (!a || !b) return true
+    var setB = new Set(b);
+    return [...new Set(a)].filter(x => setB.has(x)).length > 0;
+  }
 
   openUserMetadataDialog(): void {
     console.log('openUserMetadataDialog');
@@ -194,7 +208,7 @@ export class MediaDetailComponent implements OnInit {
       if (this.metadataGroups.content) {
         for (const metadataGroup of this.metadataGroups.content) {
           let target = metadataGroup.attachmentType === MetadataAttachmentType.MEDIA ? this.result :
-            metadataGroup.attachmentType === MetadataAttachmentType.VERSION ? this.selectedVersion : 
+            metadataGroup.attachmentType === MetadataAttachmentType.MEDIA_VERSION ? this.selectedVersion : 
             this.selectedVersion
           console.log('target', target, 'for', metadataGroup.name)
           if (!target.id) {
@@ -204,9 +218,12 @@ export class MediaDetailComponent implements OnInit {
           if (metadataGroup.metadatas) {
             let subgroup:{[k: string]: any} = {}
             for (const metadataDefinition of metadataGroup.metadatas) {
+              const editable = this.isRightGranted(metadataDefinition.editingRestrictedToRoles, this.currentUser?.roles)
+
               // preset values if set
               subgroup[`${metadataDefinition.name}`] = target.dynamicMetadatas != null ? 
-                [target.dynamicMetadatas[metadataDefinition.name]] : ['']
+                [{value: target.dynamicMetadatas[metadataDefinition.name], disabled: !editable}] : 
+                [{value: '', disabled: !editable}]
 
               // prepare autocomplete references 
               if (metadataDefinition.type === MetadataType.REFERENCE) {
@@ -251,7 +268,7 @@ export class MediaDetailComponent implements OnInit {
         media: this.result,
         metadataForm: this.metadataForm,
         metadataTypes: this.metadataTypes,
-        metadataAttachmentTypes: this.metadataAttachmentTypes,
+        metadataAttachmentTypes: this.metadataAttachmentTypes
       },
     });
 
