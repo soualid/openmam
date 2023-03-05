@@ -20,7 +20,7 @@ import java.util.Collection;
 public class LoadUsersAndRoles implements
         ApplicationListener<ContextRefreshedEvent> {
 
-    boolean alreadySetup = true;
+    boolean alreadySetup = false;
 
     @Autowired
     private UserRepository userRepository;
@@ -40,6 +40,10 @@ public class LoadUsersAndRoles implements
  
         if (alreadySetup)
             return;
+
+        var testRole = roleRepository.findByName("ROLE_USER");
+        if (testRole != null) return;
+
         var readPrivilege = createPrivilegeIfNotFound("READ_PRIVILEGE");
         var writePrivilege = createPrivilegeIfNotFound("WRITE_PRIVILEGE");
         var locationPrivilege = createPrivilegeIfNotFound("ADMIN_LOCATION_PRIVILEGE");
@@ -48,8 +52,8 @@ public class LoadUsersAndRoles implements
 
         var adminPrivileges = Arrays.asList(readPrivilege, writePrivilege, locationPrivilege, metadataSchemaPrivilege, displayTasksPrivilege);
         createRoleIfNotFound("ROLE_ADMIN", adminPrivileges, 2, "status", "ACCEPTED");
-        createRoleIfNotFound("ROLE_USER", Arrays.asList(readPrivilege), 0, "status", "REFUSED");
-        createRoleIfNotFound("ROLE_PARTNER", Arrays.asList(readPrivilege), 1, "status", "null");
+        createRoleIfNotFound("ROLE_USER", Arrays.asList(readPrivilege), 1, "status", "REFUSED");
+        createRoleIfNotFound("ROLE_PARTNER", Arrays.asList(readPrivilege), 3, "status", "null");
 
         var adminRole = roleRepository.findByName("ROLE_ADMIN");
         var userRole = roleRepository.findByName("ROLE_USER");
@@ -60,7 +64,7 @@ public class LoadUsersAndRoles implements
         user.setLastName("Admin");
         user.setPassword(passwordEncoder.encode("test"));
         user.setEmail("admin@test.com");
-        user.setRoles(Arrays.asList(adminRole, userRole));
+        user.setRoles(Arrays.asList(adminRole));
         user.setEnabled(true);
         userRepository.save(user);
 
@@ -78,7 +82,7 @@ public class LoadUsersAndRoles implements
         user.setLastName("Partner");
         user.setPassword(passwordEncoder.encode("test"));
         user.setEmail("partner@test.com");
-        user.setRoles(Arrays.asList(userRole, partnerRole));
+        user.setRoles(Arrays.asList(partnerRole));
         user.setEnabled(true);
         userRepository.save(user);
 

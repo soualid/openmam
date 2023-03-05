@@ -20,6 +20,13 @@ export class MenuComponent {
     })
   }
 
+  intersect(a:any[]|undefined, b:any[]|undefined) {
+    if (!a || !b) return []
+    var setB = new Set(b);
+    return [...new Set(a)].filter(x => setB.has(x));
+  }
+  
+
   logout(event:any) {
     event.preventDefault()
     this.userService.doLogout()
@@ -28,41 +35,49 @@ export class MenuComponent {
   links = [{
     title: 'Home',
     icon: 'home',
-    target: '/home'
+    target: '/home',
+    roles: ['ROLE_PARTNER', 'ROLE_USER', 'ROLE_ADMIN']
   },
   {
     title: 'My dashboard',
     icon: 'dashboard',
-    target: '/dashboard'
+    target: '/dashboard',
+    roles: ['ROLE_USER', 'ROLE_ADMIN']
   },
   {
     title: 'Medias',
     icon: 'play_circle',
-    target: '/search'
+    target: '/search',
+    roles: ['ROLE_USER', 'ROLE_ADMIN']
   },
   {
     title: 'Locations',
     icon: 'folder_copy',
-    target: '/locations'
+    target: '/locations',
+    roles: ['ROLE_ADMIN']
   },
   {
     title: 'Tasks',
     icon: 'task',
-    target: '/tasks'
+    target: '/tasks',
+    roles: ['ROLE_ADMIN']
   },
   {
     title: 'Metadata schemas',
     icon: 'extension',
-    target: '/metadata_schema'
+    target: '/metadata_schema',
+    roles: ['ROLE_ADMIN']
   },
   {
     title: 'Partner upload',
     icon: 'upload',
-    target: '/partner_upload'
+    target: '/partner_upload',
+    roles: ['ROLE_PARTNER']
   },
   {
     title: 'Users',
     icon: 'group',
-    target: '/users'
+    target: '/users',
+    roles: ['ROLE_ADMIN']
   }]
 }
