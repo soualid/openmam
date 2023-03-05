@@ -6,6 +6,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.access.AccessDecisionVoter;
+import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
+import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
+import org.springframework.security.access.vote.RoleHierarchyVoter;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
@@ -32,12 +36,20 @@ public class JwtSecurityConfig {
     }
 
     @Bean
+    AccessDecisionVoter hierarchyVoter() {
+        var hierarchy = new RoleHierarchyImpl();
+        hierarchy.setHierarchy("ROLE_ADMIN > ROLE_USER > ROLE_PARTNER");
+        return new RoleHierarchyVoter(hierarchy);
+    }
+
+    @Bean
     public SecurityFilterChain configure(final HttpSecurity http) throws Exception {
         return http.cors().and()
                 .csrf().disable()
                 .authorizeHttpRequests()
                         .requestMatchers("/", "/authenticate").permitAll()
                         .requestMatchers("/static/**").permitAll()
+                        .requestMatchers("/my/uploadRequests").hasRole("PARTNER")
                         .anyRequest().hasRole("USER").and()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
                 .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class)

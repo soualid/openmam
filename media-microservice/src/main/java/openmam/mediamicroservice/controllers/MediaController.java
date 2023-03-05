@@ -125,7 +125,7 @@ class MediaController {
       // automatically schedule transcoding tasks
       schedulingService.createGenerateVariantsTask(stream.getId());
     }
-    media.getElements().add(mediaElement);
+    // media.getElements().add(mediaElement);
     media.setStreamsCount(streamsCount);
     logger.info("number of elements {}", (long) media.getElements().size());
     media.setElementsCount((long) media.getElements().size());
