@@ -2,7 +2,7 @@
  
 An open MAM based on Spring Boot, Angular and FFMpeg.
 
-[![Watch the video](https://img.youtube.com/vi/q2l0poGq82s/maxresdefault.jpg)](https://youtu.be/q2l0poGq82s)
+[![Watch the video](https://user-images.githubusercontent.com/1830223/222972973-f903e17a-4205-46b1-9bad-9579d434932f.png)](https://youtu.be/q2l0poGq82s)
 
 It contains the following components:
 
