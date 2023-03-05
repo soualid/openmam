@@ -7,6 +7,7 @@ export interface MetadataDefinition {
     type?: MetadataType;
     allowedValues?: string[];
     referencedMetadataGroup?: MetadataGroup;
+    editingRestrictedToRoles?: string[];
 }
 export interface MetadataGroup {
     id: number;
@@ -28,6 +29,6 @@ export enum MetadataType {
 }
 export enum MetadataAttachmentType {
     MEDIA = 'MEDIA',
-    VERSION = 'VERSION',
+    MEDIA_VERSION = 'MEDIA_VERSION',
     REFERENCEABLE = 'REFERENCEABLE',
 }  
