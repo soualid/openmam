@@ -62,13 +62,13 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     public UserDetails loadUserByUsername(String email)
       throws UsernameNotFoundException {
  
-        User user = userRepository.findByEmail(email).get();
-        if (user == null) {
+        var userTest = userRepository.findByEmail(email);
+        if (!userTest.isPresent()) {
             return new org.springframework.security.core.userdetails.User(
               " ", " ", true, true, true, true,
               getAuthorities(Arrays.asList(roleRepository.findByName("ROLE_USER"))));
         }
-
+        var user = userTest.get();
         return new SpringSecurityOpenMamUser(user,
           user.getEmail(), user.getPassword(), user.isEnabled(), true, true, 
           true, getAuthorities(user.getRoles()));

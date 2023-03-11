@@ -21,6 +21,10 @@
         
     </div>
 
+    <div *ngIf="workflowImage">
+        <img [src]="'data:image/svg+xml;base64,' + workflowImage" />
+    </div>
+
     <div class="container" *ngIf="result?.elements?.length; else empty">
         <div>
             <h2>

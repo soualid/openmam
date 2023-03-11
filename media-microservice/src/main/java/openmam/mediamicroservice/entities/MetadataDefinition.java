@@ -34,6 +34,8 @@ public class MetadataDefinition {
     )
     private String[] editingRestrictedToRoles;
 
+    private String workflowStepToTrigger;
+
     public String[] getEditingRestrictedToRoles() {
         return editingRestrictedToRoles;
     }
@@ -144,4 +146,11 @@ public class MetadataDefinition {
         this.name = name;
     }
 
+    public String getWorkflowStepToTrigger() {
+        return workflowStepToTrigger;
+    }
+
+    public void setWorkflowStepToTrigger(String workflowStepToTrigger) {
+        this.workflowStepToTrigger = workflowStepToTrigger;
+    }
 }

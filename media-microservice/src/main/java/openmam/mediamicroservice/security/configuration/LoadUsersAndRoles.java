@@ -35,7 +35,6 @@ public class LoadUsersAndRoles implements
     private PasswordEncoder passwordEncoder;
  
     @Override
-    @Transactional
     public void onApplicationEvent(ContextRefreshedEvent event) {
  
         if (alreadySetup)

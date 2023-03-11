@@ -4,8 +4,11 @@ import openmam.mediamicroservice.entities.*;
 import openmam.mediamicroservice.repositories.*;
 import openmam.mediamicroservice.services.MediaService;
 import openmam.mediamicroservice.services.SchedulingService;
+import org.activiti.engine.ProcessEngine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
@@ -20,6 +23,9 @@ import static openmam.mediamicroservice.entities.MediaStream.Type.VIDEO;
 @RestController
 class MediaController {
 
+  @Autowired(required = false)
+  private ProcessEngine processEngine;
+
   private final MediaRepository mediaRepository;
   private final MediaElementRepository mediaElementRepository;
   private final Logger logger = LoggerFactory.getLogger(MediaController.class);
@@ -29,6 +35,9 @@ class MediaController {
   private final SchedulingService schedulingService;
   private final MediaVersionRepository mediaVersionRepository;
   private final MediaService mediaService;
+
+  @Autowired
+  private ConfigurationRepository configurationRepository;
 
   MediaController(MediaRepository mediaRepository,
                   MediaService mediaService,
@@ -155,6 +164,13 @@ class MediaController {
 
   @PostMapping("/media")
   Media newMedia(@RequestBody Media media) {
+    // ACTIVITI_MEDIA_WORKFLOW_KEY
+    var activitiMediaWorkflowKey = configurationRepository.findByKey(Configuration.Key.ACTIVITI_MEDIA_WORKFLOW_KEY);
+    if (activitiMediaWorkflowKey != null && processEngine != null) {
+      var workflowKey = activitiMediaWorkflowKey.value;
+      var process = processEngine.getRuntimeService().startProcessInstanceByKey(workflowKey);
+      media.setActivitiProcessId(process.getId());
+    }
     return mediaRepository.save(media);
   }
 

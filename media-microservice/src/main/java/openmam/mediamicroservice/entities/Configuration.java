@@ -7,6 +7,7 @@ public class Configuration {
 
     public enum Key {
         PARTNER_UPLOAD_LOCATION,
+        ACTIVITI_MEDIA_WORKFLOW_KEY,
         PARTNER_UPLOAD_INGEST_LOCATION
     }
 

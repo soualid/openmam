@@ -79,6 +79,24 @@ export class MediaService {
       );
   }
 
+  getMediaWorkflowImage<Data>(id: number): Observable<String> {
+    const url = `api/process/${id}/image`;
+    const httpOptions : Object = {
+      headers: new HttpHeaders({
+        'Accept': 'text/html',
+        'Content-Type': 'text/plain; charset=utf-8'
+      }),
+      responseType: 'text'
+    }    
+    return this.http.get<String>(url, httpOptions)
+      .pipe(
+        tap(h => {
+          const outcome = h ? 'fetched' : 'did not find';
+          console.log(`${outcome} media id=${id}`);
+        }),
+        catchError(this.handleError<String>(`getMediaWorkflowImage id=${id}`))
+      );
+  }
 
   getPendingTaskForMedia<Data>(id: number): Observable<Task[]> {
     const url = `${this.mediaUrl}/${id}/tasks/pending`;

@@ -10,6 +10,9 @@ sourceCompatibility = '17'
 
 repositories {
 	mavenCentral()
+	maven {
+		url "https://artifacts.alfresco.com/nexus/content/repositories/public"
+	}
 }
 
 dependencies {
@@ -20,6 +23,11 @@ dependencies {
 	implementation 'com.fasterxml.jackson.module:jackson-module-jakarta-xmlbind-annotations:2.14.2'
 	implementation 'org.springframework.boot:spring-boot-starter-security'
 	implementation 'com.auth0:java-jwt:4.3.0'
+	implementation 'org.activiti:activiti-spring-boot-starter:7.9.0'
+	implementation 'org.activiti:activiti-dependencies:7.9.0'
+	implementation 'org.activiti:activiti-image-generator:7.9.0'
+	implementation 'org.activiti:activiti-bpmn-layout:7.9.0'
+
 
 	implementation platform('software.amazon.awssdk:bom:2.19.14')
 	implementation 'software.amazon.awssdk:s3'

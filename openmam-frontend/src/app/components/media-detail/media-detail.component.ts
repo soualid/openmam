@@ -72,6 +72,7 @@ export interface IngestDialogData {
 export class MediaDetailComponent implements OnInit {
   pendingTasks: Task[] = [];
   currentUser: User | undefined;
+  workflowImage: String | undefined;
   
   
   constructor(private route: ActivatedRoute, 
@@ -452,6 +453,9 @@ export class MediaDetailComponent implements OnInit {
     this.mediaService.getMedia(id)
       .subscribe(result => {
         this.result = result
+        // fetch workflow image
+        if (result && result.activitiProcessId)
+          this.getMediaWorkflowImage(result.activitiProcessId)
         // select first version automatically
         if (!this.selectedVersion.id && this.result?.versions?.length) {
           this.selectedVersion = this.result.versions[0]
@@ -459,6 +463,14 @@ export class MediaDetailComponent implements OnInit {
         this.loading = false;
       })
   }
+
+
+  getMediaWorkflowImage(id:number): void {
+    this.mediaService.getMediaWorkflowImage(id)
+      .subscribe(result => {
+        this.workflowImage = result
+      })
+  }  
 
   getPendingTaskForMedia(id:number): void {
     this.mediaService.getPendingTaskForMedia(id)

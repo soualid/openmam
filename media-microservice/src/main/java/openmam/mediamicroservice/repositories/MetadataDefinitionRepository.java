@@ -6,4 +6,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface MetadataDefinitionRepository extends JpaRepository<MetadataDefinition, Long> {
 
+    MetadataDefinition findByName(String key);
 }

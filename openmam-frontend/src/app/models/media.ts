@@ -10,6 +10,7 @@ export interface CreateVersionResult {
     id: number;
 }
 export interface Media {
+    activitiProcessId?: number;
     id?: number;
     name?: string;
     video?: MediaStream;

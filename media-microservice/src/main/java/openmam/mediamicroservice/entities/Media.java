@@ -21,6 +21,15 @@ public class Media {
         return dynamicMetadatas;
     }
 
+    public String getActivitiProcessId() {
+        return activitiProcessId;
+    }
+
+    public void setActivitiProcessId(String activitiProcessId) {
+        this.activitiProcessId = activitiProcessId;
+    }
+
+    public String activitiProcessId;
     public Long elementsCount = 0L;
     public Long streamsCount = 0L;
 
